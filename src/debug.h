@@ -20,12 +20,12 @@ inline void debug_printf(const char *fmt, ...) {
     va_list args;
 
     va_start(args, fmt);
-    fprintf(debug_log, fmt, args);
+    vfprintf(debug_log, fmt, args);
     va_end(args);
 }
 #else
-inline void init_debug_log(void) {}
-inline void debug_printf(const char *fmt, ...) {}
+#define init_debug_log()
+#define debug_printf(fmt, ...)
 #endif
 
 #endif
