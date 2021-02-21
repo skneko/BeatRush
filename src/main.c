@@ -18,18 +18,23 @@ void sprite_from_sheet(C2D_Sprite *sprite, C2D_SpriteSheet sheet, size_t index);
 void draw_sprite(C2D_Sprite *sprite, float x, float y, float depth, float radians);
 
 int main(int argc, char *argv[]) {
-    /* Seed random number generator */
-    srand(time(NULL));
+    /* Enable N3DS 804MHz operation, where available */
+    osSetSpeedupEnable(true);
 
     /* Initialize ROM filesystem */
     romfsInit();
 
-    /* Initialize debug */
-#ifdef DEBUG_LOG
+    /* Initialize debug subsystems */
     init_debug_log();
-#endif
+    debug_printf("Debug log is enabled.\n");
 
-    /* Initialize screens targets */
+    /* Initialize audio components */
+    ndspInit();
+
+    /* Initialize audio subsystem */
+    // TODO
+
+    /* Initialize screen targets */
     gfxInitDefault();
     C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
     C2D_Init(C2D_DEFAULT_MAX_OBJECTS);
@@ -37,6 +42,10 @@ int main(int argc, char *argv[]) {
 
     top_left = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
 
+    /* Seed random number generator */
+    srand(time(NULL));
+
+    /* Game code */
     load_sprites();
     
     main_loop();
@@ -73,6 +82,8 @@ void load_sprites() {
     }
 }
 
+int x = 100, y = 100;
+
 void draw_test_screen() {
     C2D_DrawCircle(TOP_SCREEN_CENTER_HOR,
                     TOP_SCREEN_CENTER_VER,
@@ -85,7 +96,10 @@ void draw_test_screen() {
 
     C2D_Sprite test_ship;
     sprite_from_sheet(&test_ship, test_spritesheet, 0);
-    draw_sprite(&test_ship, 100, 100, 1, 0);
+    draw_sprite(&test_ship, (float)x, (float)y, 1, 0);
+
+    x = (x + 1) % 200;
+    y = (y + 1) % 200;
 }
 
 void sprite_from_sheet(C2D_Sprite *sprite, C2D_SpriteSheet sheet, size_t index) {
