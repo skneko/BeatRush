@@ -6,6 +6,7 @@
 
 #include "common.h"
 #include "debug.h"
+#include "audio.h"
 
 C3D_RenderTarget *top_left;
 
@@ -28,10 +29,6 @@ int main(int argc, char *argv[]) {
     init_debug_log();
     printf("Debug log is enabled.\n");
 
-    /* Initialize audio subsystem */
-    ndspInit();
-    // TODO
-
     /* Initialize screen targets */
     gfxInitDefault();
     C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
@@ -42,6 +39,9 @@ int main(int argc, char *argv[]) {
     consoleInit(GFX_BOTTOM, NULL); // FIXME: temporary video+console combo for debug
 
     printf("Screen targets initialized.\n");
+
+    /* Initialize audio subsystem */
+    audioInit();
 
     /* Seed random number generator */
     srand(time(NULL));
@@ -57,8 +57,7 @@ int main(int argc, char *argv[]) {
     gfxExit();
 
     /* Finalize audio */
-    ndspExit();
-    // TODO
+    audioExit();
 
     return EXIT_SUCCESS;
 }
