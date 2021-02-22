@@ -11,9 +11,9 @@ C3D_RenderTarget *top_left;
 
 C2D_SpriteSheet test_spritesheet;
 
-void main_loop();
-void load_sprites();
-void draw_test_screen();
+void main_loop(void);
+void load_sprites(void);
+void draw_test_screen(void);
 void sprite_from_sheet(C2D_Sprite *sprite, C2D_SpriteSheet sheet, size_t index);
 void draw_sprite(C2D_Sprite *sprite, float x, float y, float depth, float radians);
 
@@ -26,12 +26,10 @@ int main(int argc, char *argv[]) {
 
     /* Initialize debug subsystems */
     init_debug_log();
-    debug_printf("Debug log is enabled.\n");
-
-    /* Initialize audio components */
-    ndspInit();
+    printf("Debug log is enabled.\n");
 
     /* Initialize audio subsystem */
+    ndspInit();
     // TODO
 
     /* Initialize screen targets */
@@ -41,6 +39,9 @@ int main(int argc, char *argv[]) {
     C2D_Prepare();
 
     top_left = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
+    consoleInit(GFX_BOTTOM, NULL); // FIXME: temporary video+console combo for debug
+
+    printf("Screen targets initialized.\n");
 
     /* Seed random number generator */
     srand(time(NULL));
@@ -55,10 +56,14 @@ int main(int argc, char *argv[]) {
     C3D_Fini();
     gfxExit();
 
-    return 0;
+    /* Finalize audio */
+    ndspExit();
+    // TODO
+
+    return EXIT_SUCCESS;
 }
 
-void main_loop() {
+void main_loop(void) {
     while (aptMainLoop()) {
         hidScanInput();
 
@@ -69,13 +74,20 @@ void main_loop() {
 
         draw_test_screen();
 
+        /* Quit on START */
+        u32 k_down = hidKeysDown();
+        if(k_down & KEY_START) {
+            printf("\n** Quitting... **\n");
+            break;
+        }
+
         /* End frame */
         C2D_Flush();
         C3D_FrameEnd(0);
     }
 }
 
-void load_sprites() {
+void load_sprites(void) {
     test_spritesheet = C2D_SpriteSheetLoad("romfs:/gfx/test_sprites.t3x");
     if (!test_spritesheet) {
         debug_printf("Failed to load spritesheet");
@@ -84,7 +96,7 @@ void load_sprites() {
 
 int x = 100, y = 100;
 
-void draw_test_screen() {
+void draw_test_screen(void) {
     C2D_DrawCircle(TOP_SCREEN_CENTER_HOR,
                     TOP_SCREEN_CENTER_VER,
                     0,
