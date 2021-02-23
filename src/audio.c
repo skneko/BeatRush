@@ -54,6 +54,11 @@ static const size_t WAVEBUF_SIZE = SAMPLES_PER_BUF * CHANNELS_PER_SAMPLE
 
 OggOpusFile *audioFile = NULL;
 
+volatile int playbackPosition = 0;  // milliseconds since playback started
+#ifdef DEBUG_AUDIO
+TickCounter playbackTimer;
+#endif
+
 ndspWaveBuf s_waveBufs[3];
 int16_t *s_audioBuffer = NULL;
 
@@ -183,7 +188,12 @@ bool fillBuffer(OggOpusFile *opusFile_, ndspWaveBuf *waveBuf_) {
 
     // If no samples were read in the last decode cycle, we're done
     if(totalSamples == 0) {
+        #ifdef DEBUG_AUDIO
+        osTickCounterUpdate(&playbackTimer);
+        printf("Audio playback complete (%.3lf ms).\n", osTickCounterRead(&playbackTimer));
+        #else
         printf("Audio playback complete.\n");
+        #endif
         return false;
     }
 
@@ -193,11 +203,13 @@ bool fillBuffer(OggOpusFile *opusFile_, ndspWaveBuf *waveBuf_) {
     DSP_FlushDataCache(waveBuf_->data_pcm16,
         totalSamples * CHANNELS_PER_SAMPLE * sizeof(int16_t));
 
+    playbackPosition += totalSamples * 1000.0 / SAMPLE_RATE;
+
     #ifdef DEBUG_AUDIO
     // Print timing info
     osTickCounterUpdate(&timer);
-    printf("fillBuffer %lfms in %lfms\n", totalSamples * 1000.0 / SAMPLE_RATE,
-           osTickCounterRead(&timer));
+    printf("fillBuffer %lfms in %lfms - %lf\n", totalSamples * 1000.0 / SAMPLE_RATE,
+           osTickCounterRead(&timer), osTickCounterRead(&playbackTimer));
     #endif  // DEBUG
 
     return true;
@@ -293,6 +305,10 @@ bool audioInit(void) {
                                          THREAD_AFFINITY, false);
     printf("Created audio thread: %p.\n", audioThread);
 
+    #ifdef DEBUG_AUDIO
+    osTickCounterStart(&playbackTimer);
+    #endif
+
     return true;
 }
 
@@ -309,4 +325,8 @@ void audioExit(void) {
     audioExitHardware();
     ndspExit();
     op_free(audioFile);
+}
+
+int audioPlaybackPosition(void) {
+    return playbackPosition;
 }
