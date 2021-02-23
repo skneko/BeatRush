@@ -54,7 +54,10 @@ static const size_t WAVEBUF_SIZE = SAMPLES_PER_BUF * CHANNELS_PER_SAMPLE
 
 OggOpusFile *audioFile = NULL;
 
-volatile int playbackPosition = 0;  // milliseconds since playback started
+volatile int playheadPosition = 0;  // milliseconds since playback started
+int songTime = 0;
+int lastReportedPlayheadPosition = 0;
+u64 previousFrameTime;
 #ifdef DEBUG_AUDIO
 TickCounter playbackTimer;
 #endif
@@ -64,6 +67,7 @@ int16_t *s_audioBuffer = NULL;
 
 Thread audioThread;
 LightEvent s_event;
+volatile bool s_playing = false;   // Playback ongoing
 volatile bool s_quit = false;  // Quit flag
 
 // ---- HELPER FUNCTIONS ----
@@ -194,6 +198,8 @@ bool fillBuffer(OggOpusFile *opusFile_, ndspWaveBuf *waveBuf_) {
         #else
         printf("Audio playback complete.\n");
         #endif
+
+        s_playing = false;
         return false;
     }
 
@@ -203,7 +209,7 @@ bool fillBuffer(OggOpusFile *opusFile_, ndspWaveBuf *waveBuf_) {
     DSP_FlushDataCache(waveBuf_->data_pcm16,
         totalSamples * CHANNELS_PER_SAMPLE * sizeof(int16_t));
 
-    playbackPosition += totalSamples * 1000.0 / SAMPLE_RATE;
+    playheadPosition += totalSamples * 1000.0 / SAMPLE_RATE;
 
     #ifdef DEBUG_AUDIO
     // Print timing info
@@ -243,6 +249,7 @@ void audioThreadRoutine(void *const opusFile_) {
             }
             
             if(!fillBuffer(opusFile, &s_waveBufs[i])) {   // Playback complete
+                s_playing = false;
                 return;
             }
         }
@@ -252,6 +259,8 @@ void audioThreadRoutine(void *const opusFile_) {
         // (Note that the 3DS uses cooperative threading)
         LightEvent_Wait(&s_event);
     }
+    
+    s_playing = false;
 }
 
 bool audioInit(void) {
@@ -305,6 +314,10 @@ bool audioInit(void) {
                                          THREAD_AFFINITY, false);
     printf("Created audio thread: %p.\n", audioThread);
 
+    previousFrameTime = osGetTime();
+    lastReportedPlayheadPosition = 0;
+    s_playing = true;
+
     #ifdef DEBUG_AUDIO
     osTickCounterStart(&playbackTimer);
     #endif
@@ -327,6 +340,23 @@ void audioExit(void) {
     op_free(audioFile);
 }
 
+bool audioAdvancePlaybackPosition(void) {
+    if (s_playing) {
+        int currentTime = osGetTime();
+        songTime += currentTime - previousFrameTime;
+        previousFrameTime = currentTime;
+
+        if (playheadPosition != lastReportedPlayheadPosition) {
+            songTime = (songTime + playheadPosition) / 2;
+            lastReportedPlayheadPosition = playheadPosition;
+        }
+        
+        return true;
+    } else {
+        return false;
+    }
+}
+
 int audioPlaybackPosition(void) {
-    return playbackPosition;
+    return songTime;
 }

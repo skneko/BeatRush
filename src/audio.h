@@ -6,6 +6,7 @@
 extern bool audioInit(void);
 extern void audioExit(void);
 
+extern bool audioAdvancePlaybackPosition(void);
 extern int audioPlaybackPosition(void);
 
 #endif

@@ -86,14 +86,19 @@ void main_loop(void) {
     }
 }
 
+C2D_TextBuf dynamicTextBuf;
+
 void load_sprites(void) {
     test_spritesheet = C2D_SpriteSheetLoad("romfs:/gfx/test_sprites.t3x");
     if (!test_spritesheet) {
         debug_printf("Failed to load spritesheet");
     }
+
+    dynamicTextBuf = C2D_TextBufNew(10);
 }
 
 int x = 100, y = 100;
+int prevPos = 0;
 
 void draw_test_screen(void) {
     C2D_DrawCircle(TOP_SCREEN_CENTER_HOR,
@@ -109,8 +114,22 @@ void draw_test_screen(void) {
     sprite_from_sheet(&test_ship, test_spritesheet, 0);
     draw_sprite(&test_ship, (float)x, (float)y, 1, 0);
 
-    x = (x + 1) % 200;
-    y = (y + 1) % 200;
+    if (audioAdvancePlaybackPosition()) {
+        int delta = audioPlaybackPosition() - prevPos;
+        x = (x + delta / 16) % 200;
+        y = (y + delta / 16) % 200;
+
+        prevPos = audioPlaybackPosition();
+    }
+
+    C2D_Text songTimeLabel;
+    char buf[10];
+
+    C2D_TextBufClear(dynamicTextBuf);
+    snprintf(buf, sizeof(buf), "%05d", audioPlaybackPosition());
+    C2D_TextParse(&songTimeLabel, dynamicTextBuf, buf);
+    C2D_TextOptimize(&songTimeLabel);
+    C2D_DrawText(&songTimeLabel, C2D_WithColor | C2D_AtBaseline, 220.0f, 220.0f, 0.0f, 1.0f, 1.0f, C2D_WHITE);
 }
 
 void sprite_from_sheet(C2D_Sprite *sprite, C2D_SpriteSheet sheet, size_t index) {
