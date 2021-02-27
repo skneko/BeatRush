@@ -10,6 +10,14 @@
 #define TOP_SCREEN_HEIGHT       240
 #define TOP_SCREEN_CENTER_HOR   200
 #define TOP_SCREEN_CENTER_VER   120
+
+#define HITLINE_LEFT_MARGIN     50
+#define LANE_TOP_MARGIN         55
+#define LANE_BOTTOM_MARGIN      55
+#define LANE_HEIGHT             40
+
+#define DEBUG_DEPTH             1
+
 #define DPAD_ANY                (KEY_CPAD_RIGHT | KEY_CPAD_LEFT | KEY_CPAD_UP | KEY_CPAD_DOWN)
 
 #define C2D_WHITE               C2D_Color32(0xFF, 0xFF, 0xFF, 0xFF)
@@ -18,6 +26,7 @@
 #define C2D_BLUE                C2D_Color32(0x00, 0x00, 0xFF, 0xFF)
 #define C2D_BLACK               C2D_Color32(0x00, 0x00, 0x00, 0xFF)
 #define C2D_TRANSPARENT         C2D_Color32(0x00, 0x00, 0x00, 0x00)
+#define C2D_PURPLE              C2D_Color32(0x80, 0x00, 0x80, 0xFF)
 
 inline bool is_inside_rectangle(float x, float y, float rx_left, float rx_right, float ry_up, float ry_down) {
     return rx_left < rx_right - x && ry_down < ry_up - y;

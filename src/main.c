@@ -17,6 +17,7 @@ void load_sprites(void);
 void draw_test_screen(void);
 void sprite_from_sheet(C2D_Sprite *sprite, C2D_SpriteSheet sheet, size_t index);
 void draw_sprite(C2D_Sprite *sprite, float x, float y, float depth, float radians);
+void draw_debug_overlay(void);
 
 int main(int argc, char *argv[]) {
     /* Enable N3DS 804MHz operation, where available */
@@ -72,6 +73,7 @@ void main_loop(void) {
         C2D_SceneBegin(top_left);
 
         draw_test_screen();
+        draw_debug_overlay();
 
         /* Quit on START */
         u32 k_down = hidKeysDown();
@@ -112,7 +114,7 @@ void draw_test_screen(void) {
 
     C2D_Sprite test_ship;
     sprite_from_sheet(&test_ship, test_spritesheet, 0);
-    draw_sprite(&test_ship, (float)x, (float)y, 1, 0);
+    draw_sprite(&test_ship, (float)x, (float)y, 0, 0);
 
     if (audioAdvancePlaybackPosition()) {
         int delta = audioPlaybackPosition() - prevPos;
@@ -121,18 +123,6 @@ void draw_test_screen(void) {
 
         prevPos = audioPlaybackPosition();
     }
-
-    C2D_Text songTimeLabel;
-    char buf[10];
-
-    C2D_TextBufClear(dynamicTextBuf);
-    snprintf(buf, sizeof(buf), "%05d", audioPlaybackPosition());
-    C2D_TextParse(&songTimeLabel, dynamicTextBuf, buf);
-    C2D_TextOptimize(&songTimeLabel);
-    C2D_DrawText(&songTimeLabel, C2D_WithColor | C2D_AtBaseline, 230.0f, 220.0f, 0.0f, 0.5f, 0.5f, C2D_WHITE);
-
-    float progress = (float)audioPlaybackPosition() / audioLength();
-    C2D_DrawRectangle(0, TOP_SCREEN_HEIGHT - 3.0f, 0.0f, TOP_SCREEN_WIDTH * progress, 3.0f, C2D_RED, C2D_RED, C2D_RED, C2D_RED);
 }
 
 void sprite_from_sheet(C2D_Sprite *sprite, C2D_SpriteSheet sheet, size_t index) {
@@ -145,4 +135,72 @@ void draw_sprite(C2D_Sprite *sprite, float x, float y, float depth, float radian
     C2D_SpriteSetRotation(sprite, radians);
     C2D_SpriteSetDepth(sprite, depth);
     C2D_DrawSprite(sprite);
+}
+
+void draw_debug_song_time(void) {
+    C2D_Text songTimeLabel;
+    char buf[10];
+
+    C2D_TextBufClear(dynamicTextBuf);
+    snprintf(buf, sizeof(buf), "%05d", audioPlaybackPosition());
+    C2D_TextParse(&songTimeLabel, dynamicTextBuf, buf);
+    C2D_TextOptimize(&songTimeLabel);
+    C2D_DrawText(
+        &songTimeLabel, C2D_WithColor | C2D_AtBaseline, 
+        230.0f, 220.0f, DEBUG_DEPTH, 0.5f, 0.5f, 
+        C2D_WHITE);
+}
+
+void draw_debug_progress_bar(void) {
+    float progress = (float)audioPlaybackPosition() / audioLength();
+    C2D_DrawRectangle(
+        0, TOP_SCREEN_HEIGHT - 3.0f, 
+        DEBUG_DEPTH, 
+        TOP_SCREEN_WIDTH * progress, 3.0f, 
+        C2D_RED, C2D_RED, C2D_RED, C2D_RED);
+}
+
+void draw_debug_rulers(void) {
+    // top lane
+    C2D_DrawLine(
+        0, LANE_TOP_MARGIN, C2D_GREEN,
+        TOP_SCREEN_WIDTH, LANE_TOP_MARGIN, C2D_GREEN,
+        1.0f, DEBUG_DEPTH);
+    C2D_DrawLine(
+        0, LANE_TOP_MARGIN + LANE_HEIGHT, C2D_GREEN,
+        TOP_SCREEN_WIDTH, LANE_TOP_MARGIN + LANE_HEIGHT, C2D_GREEN,
+        1.0f, DEBUG_DEPTH);
+
+    // bottom lane
+    C2D_DrawLine(
+        0, TOP_SCREEN_HEIGHT - LANE_BOTTOM_MARGIN, C2D_GREEN,
+        TOP_SCREEN_WIDTH, TOP_SCREEN_HEIGHT - LANE_BOTTOM_MARGIN, C2D_GREEN,
+        1.0f, DEBUG_DEPTH);
+    C2D_DrawLine(
+        0, TOP_SCREEN_HEIGHT - LANE_BOTTOM_MARGIN - LANE_HEIGHT, C2D_GREEN,
+        TOP_SCREEN_WIDTH, TOP_SCREEN_HEIGHT - LANE_BOTTOM_MARGIN - LANE_HEIGHT, C2D_GREEN,
+        1.0f, DEBUG_DEPTH);
+
+    // hitline
+    C2D_DrawLine(
+        HITLINE_LEFT_MARGIN, 0.0f, C2D_WHITE,
+        HITLINE_LEFT_MARGIN, TOP_SCREEN_HEIGHT, C2D_WHITE,
+        1.0f, DEBUG_DEPTH);
+
+    // hitpoints
+    C2D_DrawLine(
+        HITLINE_LEFT_MARGIN - 5.0f, LANE_TOP_MARGIN + LANE_HEIGHT / 2, C2D_GREEN,
+        HITLINE_LEFT_MARGIN + 5.0f, LANE_TOP_MARGIN + LANE_HEIGHT / 2, C2D_GREEN,
+        3.0f, DEBUG_DEPTH);
+    C2D_DrawLine(
+        HITLINE_LEFT_MARGIN - 5.0f, TOP_SCREEN_HEIGHT - LANE_BOTTOM_MARGIN - LANE_HEIGHT / 2, C2D_GREEN,
+        HITLINE_LEFT_MARGIN + 5.0f, TOP_SCREEN_HEIGHT - LANE_BOTTOM_MARGIN - LANE_HEIGHT / 2, C2D_GREEN,
+        3.0f, DEBUG_DEPTH);
+}
+
+void draw_debug_overlay(void) {
+    draw_debug_song_time();
+    draw_debug_progress_bar();
+
+    draw_debug_rulers();
 }
