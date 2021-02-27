@@ -99,8 +99,29 @@ void load_sprites(void) {
     dynamicTextBuf = C2D_TextBufNew(10);
 }
 
+const unsigned short approach_time = 1400;
+const long unsigned int note_time = 10000;
+const float speed = approach_time / (TOP_SCREEN_WIDTH - HITLINE_LEFT_MARGIN);
+
+void draw_test_note(void) {
+    long long int note_remaining_time = (long long int)note_time - audioPlaybackPosition();
+    float note_x = (float)note_remaining_time / speed + HITLINE_LEFT_MARGIN;
+    printf("10000 vs %ld (%lld) => 400 vs %.1f+50\n", 
+        audioPlaybackPosition(), 
+        note_remaining_time, 
+        (float)note_remaining_time / speed);
+
+    if (note_x < -LANE_HEIGHT && note_x > TOP_SCREEN_WIDTH) {
+        return;
+    }
+
+    C2D_DrawCircle(
+        note_x, LANE_TOP_MARGIN + NOTE_RADIUS, 0.0f, NOTE_RADIUS,
+        C2D_PURPLE, C2D_PURPLE, C2D_PURPLE, C2D_PURPLE);
+}
+
 int x = 100, y = 100;
-int prevPos = 0;
+int prev_pos = 0;
 
 void draw_test_screen(void) {
     C2D_DrawCircle(TOP_SCREEN_CENTER_HOR,
@@ -117,12 +138,14 @@ void draw_test_screen(void) {
     draw_sprite(&test_ship, (float)x, (float)y, 0, 0);
 
     if (audioAdvancePlaybackPosition()) {
-        int delta = audioPlaybackPosition() - prevPos;
+        int delta = audioPlaybackPosition() - prev_pos;
         x = (x + delta / 16) % 200;
         y = (y + delta / 16) % 200;
 
-        prevPos = audioPlaybackPosition();
+        prev_pos = audioPlaybackPosition();
     }
+
+    draw_test_note();
 }
 
 void sprite_from_sheet(C2D_Sprite *sprite, C2D_SpriteSheet sheet, size_t index) {
@@ -142,7 +165,7 @@ void draw_debug_song_time(void) {
     char buf[10];
 
     C2D_TextBufClear(dynamicTextBuf);
-    snprintf(buf, sizeof(buf), "%05d", audioPlaybackPosition());
+    snprintf(buf, sizeof(buf), "%05ld", audioPlaybackPosition());
     C2D_TextParse(&songTimeLabel, dynamicTextBuf, buf);
     C2D_TextOptimize(&songTimeLabel);
     C2D_DrawText(

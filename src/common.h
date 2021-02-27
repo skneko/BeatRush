@@ -15,6 +15,7 @@
 #define LANE_TOP_MARGIN         60
 #define LANE_BOTTOM_MARGIN      60
 #define LANE_HEIGHT             40
+#define NOTE_RADIUS             LANE_HEIGHT / 2
 
 #define DEBUG_DEPTH             1
 
