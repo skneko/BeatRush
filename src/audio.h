@@ -9,4 +9,6 @@ extern void audioExit(void);
 extern bool audioAdvancePlaybackPosition(void);
 extern int audioPlaybackPosition(void);
 
+extern long long int audioLength(void);
+
 #endif

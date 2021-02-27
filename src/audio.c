@@ -272,7 +272,7 @@ bool audioInit(void) {
     printf("Initalizing audio subsystem\n"
         "\n"
         "Using %d waveBufs, each of length %d bytes\n"
-        "    (%d samples; %lf ms @ %d Hz)\n"
+        "    (%d samples; %.2lf ms @ %d Hz)\n"
         "\n"
         "Loading audio data from path: %s\n"
         "\n",
@@ -288,6 +288,9 @@ bool audioInit(void) {
                opusStrError(error));
         return false;
     }
+
+    ogg_int64_t totalSamples = op_pcm_total(audioFile, -1);
+    printf("Total samples: %lld (%.2lf ms)\n", totalSamples, totalSamples * 1000.0 / SAMPLE_RATE);
 
     // Attempt audioInitHardware
     if(!audioInitHardware()) {
@@ -359,4 +362,8 @@ bool audioAdvancePlaybackPosition(void) {
 
 int audioPlaybackPosition(void) {
     return songTime;
+}
+
+long long int audioLength(void) {
+    return op_pcm_total(audioFile, -1) * 1000 / SAMPLE_RATE;
 }

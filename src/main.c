@@ -129,7 +129,10 @@ void draw_test_screen(void) {
     snprintf(buf, sizeof(buf), "%05d", audioPlaybackPosition());
     C2D_TextParse(&songTimeLabel, dynamicTextBuf, buf);
     C2D_TextOptimize(&songTimeLabel);
-    C2D_DrawText(&songTimeLabel, C2D_WithColor | C2D_AtBaseline, 220.0f, 220.0f, 0.0f, 1.0f, 1.0f, C2D_WHITE);
+    C2D_DrawText(&songTimeLabel, C2D_WithColor | C2D_AtBaseline, 230.0f, 220.0f, 0.0f, 0.5f, 0.5f, C2D_WHITE);
+
+    float progress = (float)audioPlaybackPosition() / audioLength();
+    C2D_DrawRectangle(0, TOP_SCREEN_HEIGHT - 3.0f, 0.0f, TOP_SCREEN_WIDTH * progress, 3.0f, C2D_RED, C2D_RED, C2D_RED, C2D_RED);
 }
 
 void sprite_from_sheet(C2D_Sprite *sprite, C2D_SpriteSheet sheet, size_t index) {
