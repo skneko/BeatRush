@@ -63,6 +63,12 @@ int main(int argc, char *argv[]) {
     return EXIT_SUCCESS;
 }
 
+const unsigned short approach_time = 1400;
+const long unsigned int note_time = 10000;
+const float speed = approach_time / (TOP_SCREEN_WIDTH - HITLINE_LEFT_MARGIN);
+
+long unsigned int last_key_time = 0;
+
 void main_loop(void) {
     while (aptMainLoop()) {
         hidScanInput();
@@ -77,7 +83,11 @@ void main_loop(void) {
 
         /* Quit on START */
         u32 k_down = hidKeysDown();
-        if(k_down & KEY_START) {
+        if (k_down & KEY_A) {
+            last_key_time = audioPlaybackPosition();
+            printf("Pressed %lld off.\n", (long long int)last_key_time - note_time);
+        }
+        if (k_down & KEY_START) {
             printf("\n** Quitting... **\n");
             break;
         }
@@ -99,17 +109,9 @@ void load_sprites(void) {
     dynamicTextBuf = C2D_TextBufNew(10);
 }
 
-const unsigned short approach_time = 1400;
-const long unsigned int note_time = 10000;
-const float speed = approach_time / (TOP_SCREEN_WIDTH - HITLINE_LEFT_MARGIN);
-
 void draw_test_note(void) {
     long long int note_remaining_time = (long long int)note_time - audioPlaybackPosition();
     float note_x = (float)note_remaining_time / speed + HITLINE_LEFT_MARGIN;
-    printf("10000 vs %ld (%lld) => 400 vs %.1f+50\n", 
-        audioPlaybackPosition(), 
-        note_remaining_time, 
-        (float)note_remaining_time / speed);
 
     if (note_x < -LANE_HEIGHT && note_x > TOP_SCREEN_WIDTH) {
         return;
