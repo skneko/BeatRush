@@ -12,8 +12,8 @@
 #define TOP_SCREEN_CENTER_VER   120
 
 #define HITLINE_LEFT_MARGIN     50
-#define LANE_TOP_MARGIN         55
-#define LANE_BOTTOM_MARGIN      55
+#define LANE_TOP_MARGIN         60
+#define LANE_BOTTOM_MARGIN      60
 #define LANE_HEIGHT             40
 
 #define DEBUG_DEPTH             1
