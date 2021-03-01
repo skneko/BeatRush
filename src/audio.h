@@ -7,8 +7,8 @@ extern bool audioInit(void);
 extern void audioExit(void);
 
 extern bool audioAdvancePlaybackPosition(void);
-extern long unsigned int audioPlaybackPosition(void);
+extern unsigned long audioPlaybackPosition(void);
 
-extern long unsigned int audioLength(void);
+extern unsigned long audioLength(void);
 
 #endif

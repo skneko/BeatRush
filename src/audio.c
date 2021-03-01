@@ -360,10 +360,10 @@ bool audioAdvancePlaybackPosition(void) {
     }
 }
 
-long unsigned int audioPlaybackPosition(void) {
+unsigned long audioPlaybackPosition(void) {
     return songTime;
 }
 
-long unsigned int audioLength(void) {
+unsigned long audioLength(void) {
     return op_pcm_total(audioFile, -1) * 1000 / SAMPLE_RATE;
 }
