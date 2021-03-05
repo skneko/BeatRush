@@ -7,6 +7,7 @@
 #include "common.h"
 #include "debug.h"
 #include "audio.h"
+#include "beatmap.h"
 
 C3D_RenderTarget *top_left;
 
@@ -49,7 +50,8 @@ int main(int argc, char *argv[]) {
 
     /* Game code */
     load_sprites();
-    
+    Beatmap *beatmap = beatmap_load_from_file("romfs:/beatmaps/bassTelekinesis/beatmap.btrm");
+
     main_loop();
 
     /* Finalize engine */
