@@ -9,6 +9,7 @@
 #include "audio.h"
 #include "scene.h"
 #include "beatmap.h"
+#include "logic.h"
 
 C3D_RenderTarget *top_left;
 
@@ -51,9 +52,13 @@ int main(int argc, char *argv[]) {
     load_sprites();
     Beatmap *beatmap = beatmap_load_from_file("romfs:/beatmaps/bassTelekinesis/beatmap.btrm");
 
+    logic_init(beatmap);
     scene_init(beatmap);
+
     main_loop();
+
     scene_end();
+    logic_end();
 
     /* Finalize engine */
     C2D_Fini();
@@ -75,8 +80,11 @@ void main_loop(void) {
         C2D_TargetClear(top_left, C2D_BLACK);
         C2D_SceneBegin(top_left);
 
-        scene_draw();
-
+        if (audioAdvancePlaybackPosition()) {
+            logic_update();
+            scene_draw();
+        }
+        
         /* Quit on START */
         u32 k_down = hidKeysDown();
         if (k_down & KEY_START) {
