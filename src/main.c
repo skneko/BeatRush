@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
     load_sprites();
     Beatmap *beatmap = beatmap_load_from_file("romfs:/beatmaps/bassTelekinesis/beatmap.btrm");
 
-    scene_init();
+    scene_init(beatmap);
     main_loop();
     scene_end();
 

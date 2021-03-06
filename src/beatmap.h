@@ -1,3 +1,6 @@
+#ifndef BEATMAP_H
+#define BEATMAP_H
+
 #include <stdbool.h>
 
 typedef struct _Note {
@@ -10,7 +13,7 @@ typedef struct _Note {
 typedef struct _Beatmap {
     int start_offset;               // global compensation
     unsigned short approach_time;   // ms between note appearing and hit
-    int note_count;
+    unsigned int note_count;
     Note *notes;
 } Beatmap;
 
@@ -18,4 +21,6 @@ extern Beatmap *beatmap_load_from_file(const char *path);
 
 #ifdef DEBUG_BEATMAP
 extern void beatmap_print(const Beatmap *const beatmap);
+#endif
+
 #endif
