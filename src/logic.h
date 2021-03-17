@@ -8,4 +8,6 @@ extern void logic_end(void);
 
 extern void logic_update(void);
 
+extern unsigned long logic_score(void);
+
 #endif

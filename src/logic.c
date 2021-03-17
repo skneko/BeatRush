@@ -10,9 +10,20 @@
 #define HIT_WINDOW_OK        139
 #define HIT_WINDOW_MISS      HIT_WINDOW_OK * 2
 
+#define SCORE_PERFECT        300
+#define SCORE_GOOD           100
+#define SCORE_OK             50
+#define SCORE_MISS           0
+
 static Beatmap *beatmap;
 static Note *next_note_to_hit;
 static unsigned int remaining_notes_to_hit;
+
+static unsigned long score;
+static unsigned int hits_perfect;
+static unsigned int hits_good;
+static unsigned int hits_ok;
+static unsigned int hits_miss;
 
 void logic_init(Beatmap *const _beatmap) {
     beatmap = _beatmap;
@@ -22,6 +33,10 @@ void logic_init(Beatmap *const _beatmap) {
 
 void logic_end(void) {
 
+}
+
+static void increase_score(int increment) {
+    score += increment;
 }
 
 static void check_note(void) {
@@ -44,12 +59,20 @@ static void check_note(void) {
 
     if (abs_diff <= HIT_WINDOW_PERFECT) {
         printf("PERFECT.\n");
+        increase_score(SCORE_PERFECT);
+        hits_perfect++;
     } else if (abs_diff <= HIT_WINDOW_GOOD) {
         printf("GOOD.\n");
+        increase_score(SCORE_GOOD);
+        hits_good++;
     } else if (abs_diff <= HIT_WINDOW_OK) {
         printf("OK.\n");
+        increase_score(SCORE_OK);
+        hits_ok++;
     } else if (abs_diff <= HIT_WINDOW_MISS) {
         printf("MISS.\n");
+        increase_score(SCORE_MISS);
+        hits_miss++;
     } else {
         printf("ignored.\n");
     }
@@ -96,4 +119,8 @@ void logic_update(void) {
     if (k_down & KEY_X || k_down & KEY_Y) {
         action_jump();
     }
+}
+
+unsigned long logic_score(void) {
+    return score;
 }
