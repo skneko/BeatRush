@@ -36,7 +36,7 @@
 
 // ---- DEFINITIONS ----
 
-static const char *PATH = "romfs:/beatmaps/bassTelekinesis/track.opus";  // Path to Opus file to play
+static const char *PATH = "romfs:/beatmaps/allYouAre/track.opus";  // Path to Opus file to play
 
 static const int SAMPLE_RATE = 48000;            // Opus is fixed at 48kHz
 static const int SAMPLES_PER_BUF = SAMPLE_RATE * 120 / 1000;  // 120ms buffer

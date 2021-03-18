@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
 
     /* Game code */
     load_sprites();
-    Beatmap *beatmap = beatmap_load_from_file("romfs:/beatmaps/bassTelekinesis/beatmap.btrm");
+    Beatmap *beatmap = beatmap_load_from_file("romfs:/beatmaps/allYouAre/beatmap.btrm");
 
     logic_init(beatmap);
     scene_init(beatmap);
