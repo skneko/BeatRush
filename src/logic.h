@@ -9,5 +9,7 @@ extern void logic_end(void);
 extern void logic_update(void);
 
 extern unsigned long logic_score(void);
+extern unsigned int logic_combo(void);
+extern bool logic_is_full_combo(void);
 
 #endif

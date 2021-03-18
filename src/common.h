@@ -29,6 +29,8 @@
 #define C2D_BLACK               C2D_Color32(0x00, 0x00, 0x00, 0xFF)
 #define C2D_TRANSPARENT         C2D_Color32(0x00, 0x00, 0x00, 0x00)
 #define C2D_PURPLE              C2D_Color32(0x80, 0x00, 0x80, 0xFF)
+#define C2D_ORANGE              C2D_Color32(0xFF, 0xA5, 0x00, 0xFF)
+#define C2D_ORANGERED           C2D_Color32(0xFF, 0x45, 0x00, 0xFF)
 
 inline bool is_inside_rectangle(float x, float y, float rx_left, float rx_right, float ry_up, float ry_down) {
     return rx_left < rx_right - x && ry_down < ry_up - y;

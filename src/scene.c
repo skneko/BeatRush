@@ -9,10 +9,18 @@ static Note *first_note_to_draw;
 static unsigned int remaining_notes_to_draw;
 static float speed;
 
-#define SCORE_LABEL_BUF_SIZE 11 
+#define SCORE_LABEL_BUF_SIZE        13
+#define COMBO_LABEL_BUF_SIZE        13
+
+#define COMBO_DRAW_THRESHOLD        5
+#define COMBO_BASE_COLOR            C2D_WHITE
+#define COMBO_HIGHLIGHT_THRESHOLD   100
+#define COMBO_HIGHLIGHT_COLOR       C2D_ORANGE
+#define COMBO_FULL_COLOR            C2D_ORANGERED
 
 C2D_TextBuf songTimeLabelBuf;
 C2D_TextBuf scoreLabelBuf;
+C2D_TextBuf comboLabelBuf;
 
 void scene_init(Beatmap *const _beatmap) {
     beatmap = _beatmap;
@@ -22,6 +30,7 @@ void scene_init(Beatmap *const _beatmap) {
 
     songTimeLabelBuf = C2D_TextBufNew(10);
     scoreLabelBuf = C2D_TextBufNew(SCORE_LABEL_BUF_SIZE);
+    comboLabelBuf = C2D_TextBufNew(COMBO_LABEL_BUF_SIZE);
 }
 
 void scene_end(void) {
@@ -100,14 +109,44 @@ static void draw_score(void) {
     C2D_Text scoreLabel;
     char buf[SCORE_LABEL_BUF_SIZE];
 
+    unsigned long score = logic_score();
+
     C2D_TextBufClear(scoreLabelBuf);
-    snprintf(buf, sizeof(buf), "%06lu", logic_score());
+    snprintf(buf, sizeof(buf), "%06lu", score);
     C2D_TextParse(&scoreLabel, scoreLabelBuf, buf);
     C2D_TextOptimize(&scoreLabel);
     C2D_DrawText(
         &scoreLabel, C2D_WithColor | C2D_AtBaseline, 
         290.0f, 25.0f, 0.0f, 0.8f, 0.8f, 
         C2D_WHITE);
+}
+
+static void draw_combo(void) {
+    C2D_Text comboLabel;
+    char buf[COMBO_LABEL_BUF_SIZE];
+
+    unsigned int combo = logic_combo();
+    bool is_full = logic_is_full_combo();
+
+    u32 color = COMBO_BASE_COLOR;
+    if (combo >= COMBO_HIGHLIGHT_THRESHOLD) {
+        if (is_full) {
+            color = COMBO_FULL_COLOR;
+        } else {
+            color = COMBO_HIGHLIGHT_COLOR;
+        }
+    }
+
+    if (combo > COMBO_DRAW_THRESHOLD) {
+        C2D_TextBufClear(comboLabelBuf);
+        snprintf(buf, sizeof(buf), "%u", combo);
+        C2D_TextParse(&comboLabel, comboLabelBuf, buf);
+        C2D_TextOptimize(&comboLabel);
+        C2D_DrawText(
+            &comboLabel, C2D_WithColor | C2D_AtBaseline | C2D_AlignCenter, 
+            200.0f, 25.0f, 0.0f, 1.0f, 1.0f, 
+            color);
+    }
 }
 
 static void draw_debug_song_time(void) {
@@ -181,6 +220,7 @@ static void draw_debug_overlay(void) {
 void scene_draw(void) {
     draw_notes();
     draw_score();
+    draw_combo();
 
     draw_debug_overlay();
 }
