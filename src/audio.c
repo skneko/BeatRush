@@ -36,8 +36,6 @@
 
 // ---- DEFINITIONS ----
 
-static const char *PATH = "romfs:/beatmaps/popStars/track.opus";  // Path to Opus file to play
-
 static const int SAMPLE_RATE = 48000;            // Opus is fixed at 48kHz
 static const int SAMPLES_PER_BUF = SAMPLE_RATE * 120 / 1000;  // 120ms buffer
 static const int CHANNELS_PER_SAMPLE = 2;        // We ask libopusfile for
@@ -263,7 +261,7 @@ void audioThreadRoutine(void *const opusFile_) {
     s_playing = false;
 }
 
-bool audioInit(void) {
+bool audioInit(const char *path) {
     ndspInit();
     
     // Setup LightEvent for synchronisation of audioThread
@@ -278,11 +276,11 @@ bool audioInit(void) {
         "\n",
         ARRAY_SIZE(s_waveBufs), WAVEBUF_SIZE, SAMPLES_PER_BUF,
         SAMPLES_PER_BUF * 1000.0 / SAMPLE_RATE, SAMPLE_RATE,
-        PATH);
+        path);
 
     // Open the Opus audio file
     int error = 0;
-    audioFile = op_open_file(PATH, &error);
+    audioFile = op_open_file(path, &error);
     if(error) {
         printf("Failed to open file: error %d (%s).\n", error,
                opusStrError(error));

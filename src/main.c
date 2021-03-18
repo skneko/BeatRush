@@ -20,6 +20,8 @@ void load_sprites(void);
 void sprite_from_sheet(C2D_Sprite *sprite, C2D_SpriteSheet sheet, size_t index);
 void draw_sprite(C2D_Sprite *sprite, float x, float y, float depth, float radians);
 
+static const char *BEATMAP = "popStars";
+
 int main(int argc, char *argv[]) {
     /* Enable N3DS 804MHz operation, where available */
     osSetSpeedupEnable(true);
@@ -42,23 +44,30 @@ int main(int argc, char *argv[]) {
 
     printf("Screen targets initialized.\n");
 
-    /* Initialize audio subsystem */
-    audioInit();
-
     /* Seed random number generator */
     srand(time(NULL));
 
     /* Game code */
     load_sprites();
-    Beatmap *beatmap = beatmap_load_from_file("romfs:/beatmaps/popStars/beatmap.btrm");
 
+    char beatmap_map[100];
+    snprintf(beatmap_map, sizeof(beatmap_map), "romfs:/beatmaps/%s/beatmap.btrm", BEATMAP);
+    char beatmap_track[100];
+    snprintf(beatmap_track, sizeof(beatmap_track), "romfs:/beatmaps/%s/track.opus", BEATMAP);
+
+    Beatmap *beatmap = beatmap_load_from_file(beatmap_map);
+
+    /* Initialize subsystems */
+    audioInit(beatmap_track);
     logic_init(beatmap);
     scene_init(beatmap);
 
     main_loop();
 
+    /* Finalize subsystems */
     scene_end();
     logic_end();
+    audioExit();
 
     free(beatmap);
 
@@ -67,8 +76,7 @@ int main(int argc, char *argv[]) {
     C3D_Fini();
     gfxExit();
 
-    /* Finalize audio */
-    audioExit();
+    
 
     return EXIT_SUCCESS;
 }

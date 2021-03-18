@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-extern bool audioInit(void);
+extern bool audioInit(const char *path);
 extern void audioExit(void);
 
 extern bool audioAdvancePlaybackPosition(void);
