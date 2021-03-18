@@ -61,9 +61,9 @@ static NoteDrawingResult draw_note(const Note *const note) {
         lane_y = TOP_SCREEN_HEIGHT - LANE_BOTTOM_MARGIN - LANE_HEIGHT + NOTE_RADIUS + NOTE_MARGIN;
     }
 
-    C2D_DrawCircle(
+    C2D_DrawCircleSolid(
         note_x, lane_y, 0.0f, NOTE_RADIUS,
-        C2D_PURPLE, C2D_PURPLE, C2D_PURPLE, C2D_PURPLE);
+        C2D_PURPLE);
     C2D_DrawLine(note_x, lane_y - NOTE_RADIUS, C2D_RED,
         note_x, lane_y + NOTE_RADIUS, C2D_RED,
         1.0f, 0.1f);
@@ -210,11 +210,32 @@ static void draw_debug_rulers(void) {
         3.0f, DEBUG_DEPTH);
 }
 
+static void draw_debug_keypress_hint(bool top_lane) {
+    float lane_y = (top_lane ? LANE_TOP_MARGIN : TOP_SCREEN_HEIGHT - LANE_BOTTOM_MARGIN - LANE_HEIGHT) + LANE_HEIGHT / 2;
+
+    C2D_DrawCircleSolid(
+        HITLINE_LEFT_MARGIN, lane_y, 0.0f, NOTE_RADIUS / 2,
+        C2D_ORANGE);
+}
+
+static void draw_debug_keypress_hints(void) {
+    u32 k_down = hidKeysHeld();
+
+     if (k_down & KEY_A || k_down & KEY_B) {
+        draw_debug_keypress_hint(false);
+    }
+    if (k_down & KEY_X || k_down & KEY_Y) {
+        draw_debug_keypress_hint(true);
+    }
+}
+
 static void draw_debug_overlay(void) {
     draw_debug_song_time();
     draw_debug_progress_bar();
 
     draw_debug_rulers();
+
+    draw_debug_keypress_hints();
 }
 
 void scene_draw(void) {
