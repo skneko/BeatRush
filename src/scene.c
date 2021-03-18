@@ -47,14 +47,17 @@ static NoteDrawingResult draw_note(const Note *const note) {
 
     float lane_y;
     if (note->topLane) {
-        lane_y = LANE_TOP_MARGIN + NOTE_RADIUS;
+        lane_y = LANE_TOP_MARGIN + NOTE_RADIUS + NOTE_MARGIN;
     } else {
-        lane_y = TOP_SCREEN_HEIGHT - LANE_BOTTOM_MARGIN - LANE_HEIGHT + NOTE_RADIUS;
+        lane_y = TOP_SCREEN_HEIGHT - LANE_BOTTOM_MARGIN - LANE_HEIGHT + NOTE_RADIUS + NOTE_MARGIN;
     }
 
     C2D_DrawCircle(
         note_x, lane_y, 0.0f, NOTE_RADIUS,
         C2D_PURPLE, C2D_PURPLE, C2D_PURPLE, C2D_PURPLE);
+    C2D_DrawLine(note_x, lane_y - NOTE_RADIUS, C2D_RED,
+        note_x, lane_y + NOTE_RADIUS, C2D_RED,
+        1.0f, 0.1f);
 
     return NOTE_DRAWN;
 }
