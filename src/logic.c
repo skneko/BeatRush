@@ -31,8 +31,7 @@ void logic_init(Beatmap *const _beatmap) {
     beatmap = _beatmap;
     next_note_to_hit = beatmap->notes;
     remaining_notes_to_hit = beatmap->note_count;
-
-    global_offset = -20;    // FIXME
+    global_offset = beatmap->start_offset;
 }
 
 void logic_end(void) {
@@ -104,6 +103,7 @@ static void advance_notes(void) {
         last_chance_position = audioPlaybackPosition() + global_offset - HIT_WINDOW_MISS;
     }
     
+    //printf("%lu < %lu\n", next_note_to_hit->position, last_chance_position);
     while ( remaining_notes_to_hit > 0 && 
             next_note_to_hit->position < last_chance_position) 
     {

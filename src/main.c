@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
 
     /* Game code */
     load_sprites();
-    Beatmap *beatmap = beatmap_load_from_file("romfs:/beatmaps/allYouAre/beatmap.btrm");
+    Beatmap *beatmap = beatmap_load_from_file("romfs:/beatmaps/popStars/beatmap.btrm");
 
     logic_init(beatmap);
     scene_init(beatmap);
@@ -59,6 +59,8 @@ int main(int argc, char *argv[]) {
 
     scene_end();
     logic_end();
+
+    free(beatmap);
 
     /* Finalize engine */
     C2D_Fini();
