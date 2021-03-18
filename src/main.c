@@ -92,8 +92,8 @@ void main_loop(void) {
 
         if (audioAdvancePlaybackPosition()) {
             logic_update();
-            scene_draw();
         }
+        scene_draw();
         
         /* Quit on START */
         u32 k_down = hidKeysDown();
