@@ -20,7 +20,7 @@ void load_sprites(void);
 void sprite_from_sheet(C2D_Sprite *sprite, C2D_SpriteSheet sheet, size_t index);
 void draw_sprite(C2D_Sprite *sprite, float x, float y, float depth, float radians);
 
-static const char *BEATMAP = "popStars";
+static const char *BEATMAP = "bassTelekinesis"; // FIXME
 
 int main(int argc, char *argv[]) {
     /* Enable N3DS 804MHz operation, where available */
