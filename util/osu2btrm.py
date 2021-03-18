@@ -1,21 +1,21 @@
 import sys
 import math
 
-if not 2 <= len(sys.argv) <= 3:
+if not 2 <= len(sys.argv) <= 4:
     print(f'Usage: {sys.argv[0]} <file> [approach speed]')
 
 path = sys.argv[1]
-approach_speed = int(sys.argv[3]) if len(sys.argv) > 3 else 1400
+approach_speed = int(sys.argv[2]) if len(sys.argv) > 2 else 1400
+time_margin = int(sys.argv[3]) if len(sys.argv) > 3 else 100
 
 last = -1
-time_margin = 100
 lane_change_time = 800
 first_time = None
 
 with open(path, "r", encoding="utf8") as file:
     lines = file.readlines()
 
-    print(f'BTRM\n\n0\t1400\n')
+    print(f'BTRM\n\n0\t{approach_speed}\n')
 
     first_important_line = 1
 
