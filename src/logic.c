@@ -18,9 +18,9 @@
 #define COMBO_BASE_MULT      1
 #define COMBO_A_GATE         10
 #define COMBO_A_MULT         2
-#define COMBO_B_GATE         30
+#define COMBO_B_GATE         20
 #define COMBO_B_MULT         4
-#define COMBO_C_GATE         100
+#define COMBO_C_GATE         40
 #define COMBO_C_MULT         8
 
 static Beatmap *beatmap;
