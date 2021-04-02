@@ -149,6 +149,10 @@ static void draw_combo(void) {
     }
 }
 
+static void draw_player_sprite(void){
+    //SOMETHING HERE
+}
+
 static void draw_debug_song_time(void) {
     C2D_Text songTimeLabel;
     char buf[10];
@@ -239,6 +243,7 @@ static void draw_debug_overlay(void) {
 }
 
 void scene_draw(void) {
+    draw_player_sprite();
     draw_notes();
     draw_score();
     draw_combo();
