@@ -128,15 +128,15 @@ static void action_jump(void) {
 }
 
 static void advance_notes(void) {
-    unsigned long last_chance_position = 0;
+    long long last_chance_position = 0;
     if (audioPlaybackPosition() > HIT_WINDOW_MISS) {
-        last_chance_position = audioPlaybackPosition() + global_offset - HIT_WINDOW_MISS;
+        last_chance_position = (signed long long)audioPlaybackPosition() + global_offset - HIT_WINDOW_MISS;
     }
     
     while ( remaining_notes_to_hit > 0 && 
             next_note_to_hit->position < last_chance_position) 
     {
-        printf("Lost chance for note at %lu.\n", next_note_to_hit->position);
+        printf("Lost chance for note at %lu (< %lld)\n", next_note_to_hit->position, last_chance_position);
 
         next_note_to_hit++;
         notes_passed++;
