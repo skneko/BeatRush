@@ -16,6 +16,8 @@ static bool first_note_seen;
 
 #define SCORE_LABEL_BUF_SIZE        13
 #define COMBO_LABEL_BUF_SIZE        13
+#define HEALTH_LABEL_BUF_SIZE       41
+#define DYN_TEXT_BUF_SIZE           4096
 
 #define COMBO_DRAW_THRESHOLD        5
 #define COMBO_BASE_COLOR            C2D_WHITE
@@ -31,9 +33,7 @@ static bool first_note_seen;
 #define ATTENTION_WARN_PERIOD       210
 #define ATTENTION_WARN_VISIBLE      100
 
-C2D_TextBuf songTimeLabelBuf;
-C2D_TextBuf scoreLabelBuf;
-C2D_TextBuf comboLabelBuf;
+C2D_TextBuf dynamicTextBuf;
 
 void scene_init(Beatmap *const _beatmap) {
     beatmap = _beatmap;
@@ -41,15 +41,13 @@ void scene_init(Beatmap *const _beatmap) {
     remaining_notes_to_draw = beatmap->note_count;
     speed = beatmap->approach_time / (TOP_SCREEN_WIDTH - HITLINE_LEFT_MARGIN);
 
-    songTimeLabelBuf = C2D_TextBufNew(10);
-    scoreLabelBuf = C2D_TextBufNew(SCORE_LABEL_BUF_SIZE);
-    comboLabelBuf = C2D_TextBufNew(COMBO_LABEL_BUF_SIZE);
+    dynamicTextBuf = C2D_TextBufNew(DYN_TEXT_BUF_SIZE);
 
     first_note_seen = false;
 }
 
 void scene_end(void) {
-    C2D_TextBufDelete(songTimeLabelBuf);
+    C2D_TextBufDelete(dynamicTextBuf);
 }
 
 typedef enum _NoteDrawingResult {
@@ -130,9 +128,9 @@ static void draw_score(void) {
 
     unsigned long score = logic_score();
 
-    C2D_TextBufClear(scoreLabelBuf);
+    C2D_TextBufClear(dynamicTextBuf);
     snprintf(buf, sizeof(buf), "%06lu", score);
-    C2D_TextParse(&scoreLabel, scoreLabelBuf, buf);
+    C2D_TextParse(&scoreLabel, dynamicTextBuf, buf);
     C2D_TextOptimize(&scoreLabel);
     C2D_DrawText(
         &scoreLabel, C2D_WithColor | C2D_AtBaseline, 
@@ -157,15 +155,36 @@ static void draw_combo(void) {
     }
 
     if (combo > COMBO_DRAW_THRESHOLD) {
-        C2D_TextBufClear(comboLabelBuf);
+        C2D_TextBufClear(dynamicTextBuf);
         snprintf(buf, sizeof(buf), "%u", combo);
-        C2D_TextParse(&comboLabel, comboLabelBuf, buf);
+        C2D_TextParse(&comboLabel, dynamicTextBuf, buf);
         C2D_TextOptimize(&comboLabel);
         C2D_DrawText(
             &comboLabel, C2D_WithColor | C2D_AtBaseline | C2D_AlignCenter, 
             200.0f, 25.0f, 0.0f, 1.0f, 1.0f, 
             color);
     }
+}
+
+static void draw_health(void) {
+    C2D_Text healthIconArea;
+    char buf[HEALTH_LABEL_BUF_SIZE];
+
+    unsigned int health = logic_health();
+
+    C2D_TextBufClear(dynamicTextBuf);
+    
+    buf[0] = '\0';
+    for (int i = 0; i < health; i++) {
+        strcat(buf, "♥");
+    }
+
+    C2D_TextParse(&healthIconArea, dynamicTextBuf, buf);
+    C2D_TextOptimize(&healthIconArea);
+    C2D_DrawText(
+        &healthIconArea, C2D_WithColor | C2D_AtBaseline | C2D_AlignCenter, 
+        100.0f, 230.0f, 0.0f, 1.5f, 1.0f, 
+        logic_is_invencible() ? C2D_BLUE : C2D_RED);
 }
 
 static void draw_attention_warnings(void) {
@@ -190,9 +209,9 @@ static void draw_debug_song_time(void) {
     C2D_Text songTimeLabel;
     char buf[10];
 
-    C2D_TextBufClear(songTimeLabelBuf);
+    C2D_TextBufClear(dynamicTextBuf);
     snprintf(buf, sizeof(buf), "%05ld", audioPlaybackPosition());
-    C2D_TextParse(&songTimeLabel, songTimeLabelBuf, buf);
+    C2D_TextParse(&songTimeLabel, dynamicTextBuf, buf);
     C2D_TextOptimize(&songTimeLabel);
     C2D_DrawText(
         &songTimeLabel, C2D_WithColor | C2D_AtBaseline, 
@@ -277,8 +296,10 @@ static void draw_debug_overlay(void) {
 
 void scene_draw(void) {
     draw_notes();
+
     draw_score();
     draw_combo();
+    draw_health();
 
     if (!first_note_seen) {
         draw_attention_warnings();

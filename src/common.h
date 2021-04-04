@@ -32,20 +32,12 @@
 #define C2D_ORANGE              C2D_Color32(0xFF, 0xA5, 0x00, 0xFF)
 #define C2D_ORANGERED           C2D_Color32(0xFF, 0x45, 0x00, 0xFF)
 
-inline bool is_inside_rectangle(float x, float y, float rx_left, float rx_right, float ry_up, float ry_down) {
-    return rx_left < rx_right - x && ry_down < ry_up - y;
-}
-
-inline bool is_inside_circle(float x, float y, float cx, float cy, float cr) {
-    return sqrt((cx -x) * (cx - x) + (cy - y) * (cy - y)) < cr;
-}
-
-inline float clampf(float f, float floor, float ceil) {
-    return f < floor ? floor : (f > ceil ? ceil : f);
-}
-
-inline bool is_inside_top_screen(float x, float y) {
-    return is_inside_rectangle(x, y, 0.0f, TOP_SCREEN_WIDTH, 0.0f, TOP_SCREEN_HEIGHT);
+inline unsigned long saturated_sub_llu(unsigned long lhs, unsigned long rhs) {
+    if (rhs > lhs) {
+        return 0;
+    } else {
+        return lhs - rhs;
+    }
 }
 
 #endif
