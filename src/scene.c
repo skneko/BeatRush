@@ -3,11 +3,16 @@
 #include "common.h"
 #include "audio.h"
 #include "logic.h"
+#include "draw.h"
 
 static Beatmap * beatmap;
 static Note *first_note_to_draw;
 static unsigned int remaining_notes_to_draw;
 static float speed;
+
+static bool first_note_seen;
+
+#define OVER_UI_DEPTH               0.5f
 
 #define SCORE_LABEL_BUF_SIZE        13
 #define COMBO_LABEL_BUF_SIZE        13
@@ -17,6 +22,14 @@ static float speed;
 #define COMBO_HIGHLIGHT_THRESHOLD   100
 #define COMBO_HIGHLIGHT_COLOR       C2D_ORANGE
 #define COMBO_FULL_COLOR            C2D_ORANGERED
+
+#define ATTENTION_WARN_THRESHOLD    3000
+#define ATTENTION_WARN_MARGIN_X     20
+#define ATTENTION_WARN_MARGIN_Y     20
+#define ATTENTION_WARN_BASE         10
+#define ATTENTION_WARN_HEIGHT       14
+#define ATTENTION_WARN_PERIOD       210
+#define ATTENTION_WARN_VISIBLE      100
 
 C2D_TextBuf songTimeLabelBuf;
 C2D_TextBuf scoreLabelBuf;
@@ -31,6 +44,8 @@ void scene_init(Beatmap *const _beatmap) {
     songTimeLabelBuf = C2D_TextBufNew(10);
     scoreLabelBuf = C2D_TextBufNew(SCORE_LABEL_BUF_SIZE);
     comboLabelBuf = C2D_TextBufNew(COMBO_LABEL_BUF_SIZE);
+
+    first_note_seen = false;
 }
 
 void scene_end(void) {
@@ -59,6 +74,10 @@ static NoteDrawingResult draw_note(const Note *const note) {
         lane_y = LANE_TOP_MARGIN + NOTE_RADIUS + NOTE_MARGIN;
     } else {
         lane_y = TOP_SCREEN_HEIGHT - LANE_BOTTOM_MARGIN - LANE_HEIGHT + NOTE_RADIUS + NOTE_MARGIN;
+    }
+
+    if (!first_note_seen) {
+        first_note_seen = true;
     }
 
     C2D_DrawCircleSolid(
@@ -146,6 +165,24 @@ static void draw_combo(void) {
             &comboLabel, C2D_WithColor | C2D_AtBaseline | C2D_AlignCenter, 
             200.0f, 25.0f, 0.0f, 1.0f, 1.0f, 
             color);
+    }
+}
+
+static void draw_attention_warnings(void) {
+    long long time_until_first = (long long)first_note_to_draw->position - audioPlaybackPosition();
+
+    if (time_until_first < ATTENTION_WARN_THRESHOLD 
+        && flicker_is_visible(time_until_first, ATTENTION_WARN_PERIOD, ATTENTION_WARN_VISIBLE)) 
+    {
+        float left_x = ATTENTION_WARN_MARGIN_X;
+        float right_x = TOP_SCREEN_WIDTH - ATTENTION_WARN_MARGIN_X;
+        float top_y = ATTENTION_WARN_MARGIN_Y;
+        float bottom_y = TOP_SCREEN_HEIGHT - ATTENTION_WARN_MARGIN_Y;
+
+        draw_sideways_triangle(left_x,  top_y,    ATTENTION_WARN_BASE, ATTENTION_WARN_HEIGHT,  1,  1, C2D_RED, OVER_UI_DEPTH);
+        draw_sideways_triangle(right_x, top_y,    ATTENTION_WARN_BASE, ATTENTION_WARN_HEIGHT, -1,  1, C2D_RED, OVER_UI_DEPTH);
+        draw_sideways_triangle(left_x,  bottom_y, ATTENTION_WARN_BASE, ATTENTION_WARN_HEIGHT,  1, -1, C2D_RED, OVER_UI_DEPTH);
+        draw_sideways_triangle(right_x, bottom_y, ATTENTION_WARN_BASE, ATTENTION_WARN_HEIGHT, -1, -1, C2D_RED, OVER_UI_DEPTH);
     }
 }
 
@@ -242,6 +279,10 @@ void scene_draw(void) {
     draw_notes();
     draw_score();
     draw_combo();
+
+    if (!first_note_seen) {
+        draw_attention_warnings();
+    }
 
     draw_debug_overlay();
 }
