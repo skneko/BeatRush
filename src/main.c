@@ -20,7 +20,7 @@ void load_sprites(void);
 void sprite_from_sheet(C2D_Sprite *sprite, C2D_SpriteSheet sheet, size_t index);
 void draw_sprite(C2D_Sprite *sprite, float x, float y, float depth, float radians);
 
-static const char *BEATMAP = "bassTelekinesis"; // FIXME
+static const char *BEATMAP = "popStars"; // FIXME
 
 int main(int argc, char *argv[]) {
     /* Enable N3DS 804MHz operation, where available */
@@ -62,6 +62,7 @@ int main(int argc, char *argv[]) {
     logic_init(beatmap);
     scene_init(beatmap);
 
+    audioPlay();
     main_loop();
 
     /* Finalize subsystems */
@@ -94,12 +95,17 @@ void main_loop(void) {
             logic_update();
         }
         scene_draw();
-        
-        /* Quit on START */
+
+        /* Pause on START */
         u32 k_down = hidKeysDown();
         if (k_down & KEY_START) {
-            printf("\n** Quitting... **\n");
-            break;
+            printf("\n** Toggle pause **\n");
+
+            if (audioIsPaused()) {
+                audioPlay();
+            } else {
+                audioPause();
+            }
         }
 
         /* End frame */

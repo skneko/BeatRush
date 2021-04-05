@@ -13,6 +13,7 @@ static float speed;
 static bool first_note_seen;
 
 #define OVER_UI_DEPTH               0.5f
+#define PAUSE_MENU_DEPTH            0.9f
 
 #define SCORE_LABEL_BUF_SIZE        13
 #define COMBO_LABEL_BUF_SIZE        13
@@ -296,7 +297,25 @@ static void draw_debug_overlay(void) {
     draw_debug_keypress_hints();
 }
 
+void draw_pause(void) {
+    C2D_Text pauseLabel;
+    char buf[10];
+
+    C2D_TextBufClear(dynamicTextBuf);
+    snprintf(buf, sizeof(buf), "PAUSE");
+    C2D_TextParse(&pauseLabel, dynamicTextBuf, buf);
+    C2D_TextOptimize(&pauseLabel);
+    C2D_DrawText(
+        &pauseLabel, C2D_WithColor | C2D_AlignCenter, 
+        TOP_SCREEN_CENTER_HOR, TOP_SCREEN_CENTER_VER - NOTE_RADIUS - 5, PAUSE_MENU_DEPTH, 1.5f, 1.5f, 
+        C2D_WHITE);
+}
+
 void scene_draw(void) {
+    if (audioIsPaused()) {
+        draw_pause();
+    }
+
     draw_notes();
 
     draw_score();
