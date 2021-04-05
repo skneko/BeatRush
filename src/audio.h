@@ -11,4 +11,8 @@ extern unsigned long audioPlaybackPosition(void);
 
 extern unsigned long audioLength(void);
 
+extern void audioPause(void);
+extern void audioPlay(void);
+extern bool audioIsPaused(void);
+
 #endif

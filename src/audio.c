@@ -37,7 +37,7 @@
 // ---- DEFINITIONS ----
 
 static const int SAMPLE_RATE = 48000;            // Opus is fixed at 48kHz
-static const int SAMPLES_PER_BUF = SAMPLE_RATE * 120 / 1000;  // 120ms buffer
+static const int SAMPLES_PER_BUF = SAMPLE_RATE * 30 / 1000;  // 30ms buffer
 static const int CHANNELS_PER_SAMPLE = 2;        // We ask libopusfile for
                                                  // stereo output; it will down
                                                  // -mix for us as necessary.
@@ -65,7 +65,8 @@ int16_t *s_audioBuffer = NULL;
 
 Thread audioThread;
 LightEvent s_event;
-volatile bool s_playing = false;   // Playback ongoing
+volatile bool s_song_ongoing = false;   // Song has started but not finished
+volatile bool s_paused = false;
 volatile bool s_quit = false;  // Quit flag
 
 // ---- HELPER FUNCTIONS ----
@@ -197,7 +198,7 @@ bool fillBuffer(OggOpusFile *opusFile_, ndspWaveBuf *waveBuf_) {
         printf("Audio playback complete.\n");
         #endif
 
-        s_playing = false;
+        s_song_ongoing = false;
         return false;
     }
 
@@ -241,14 +242,16 @@ void audioThreadRoutine(void *const opusFile_) {
     while(!s_quit) {  // Whilst the quit flag is unset,
                       // search our waveBufs and fill any that aren't currently
                       // queued for playback (i.e, those that are 'done')
-        for(size_t i = 0; i < ARRAY_SIZE(s_waveBufs); ++i) {
-            if(s_waveBufs[i].status != NDSP_WBUF_DONE) {
-                continue;
-            }
-            
-            if(!fillBuffer(opusFile, &s_waveBufs[i])) {   // Playback complete
-                s_playing = false;
-                return;
+        if (!s_paused) {
+            for(size_t i = 0; i < ARRAY_SIZE(s_waveBufs); ++i) {
+                if(s_waveBufs[i].status != NDSP_WBUF_DONE) {
+                    continue;
+                }
+                
+                if(!fillBuffer(opusFile, &s_waveBufs[i])) {   // Playback complete
+                    s_song_ongoing = false;
+                    return;
+                }
             }
         }
 
@@ -258,7 +261,7 @@ void audioThreadRoutine(void *const opusFile_) {
         LightEvent_Wait(&s_event);
     }
     
-    s_playing = false;
+    s_song_ongoing = false;
 }
 
 bool audioInit(const char *path) {
@@ -317,7 +320,8 @@ bool audioInit(const char *path) {
 
     previousFrameTime = osGetTime();
     lastReportedPlayheadPosition = 0;
-    s_playing = true;
+    s_song_ongoing = true;
+    s_paused = true;
 
     #ifdef DEBUG_AUDIO
     osTickCounterStart(&playbackTimer);
@@ -342,11 +346,13 @@ void audioExit(void) {
 }
 
 bool audioAdvancePlaybackPosition(void) {
-    if (s_playing) {
-        int currentTime = osGetTime();
-        songTime += currentTime - previousFrameTime;
-        previousFrameTime = currentTime;
+    int currentTime = osGetTime();
+    int dt = currentTime - previousFrameTime;
+    previousFrameTime = currentTime;
 
+    if (s_song_ongoing && !s_paused) {
+        songTime += dt;
+        
         if (playheadPosition != lastReportedPlayheadPosition) {
             songTime = (songTime + playheadPosition) / 2;
             lastReportedPlayheadPosition = playheadPosition;
@@ -364,4 +370,16 @@ unsigned long audioPlaybackPosition(void) {
 
 unsigned long audioLength(void) {
     return op_pcm_total(audioFile, -1) * 1000 / SAMPLE_RATE;
+}
+
+void audioPause(void) {
+    s_paused = true;
+}
+
+void audioPlay(void) {
+    s_paused = false;
+}
+
+bool audioIsPaused(void) {
+    return s_paused;
 }
