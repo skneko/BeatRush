@@ -78,12 +78,14 @@ static NoteDrawingResult draw_note(const Note *const note) {
         first_note_seen = true;
     }
 
-    C2D_DrawCircleSolid(
-        note_x, lane_y, 0.0f, NOTE_RADIUS,
-        C2D_PURPLE);
-    C2D_DrawLine(note_x, lane_y - NOTE_RADIUS, C2D_RED,
-        note_x, lane_y + NOTE_RADIUS, C2D_RED,
-        1.0f, 0.1f);
+    if (!note->hidden) {
+        C2D_DrawCircleSolid(
+            note_x, lane_y, 0.0f, NOTE_RADIUS,
+            C2D_PURPLE);
+        C2D_DrawLine(note_x, lane_y - NOTE_RADIUS, C2D_RED,
+            note_x, lane_y + NOTE_RADIUS, C2D_RED,
+            1.0f, 0.1f);
+    }
 
     return NOTE_DRAWN;
 }

@@ -95,6 +95,8 @@ static void check_note(void) {
     printf("HIT %ldms... ", diff);
 
     if (abs_diff <= HIT_WINDOW_MISS) {
+        next_note_to_hit->hidden = true;
+
         next_note_to_hit++;
         notes_passed++;
         remaining_notes_to_hit--;

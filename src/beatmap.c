@@ -27,7 +27,7 @@ void load_notes(Beatmap *const map, FILE *const map_file, unsigned int note_coun
             printf("Found a bad note definition at %lu.\n", ftell(map_file));
         }
 
-        Note note = { position, type, (bool)topLane, duration };
+        Note note = { position, type, (bool)topLane, duration, false };
         map->notes[i] = note;
     }
 }

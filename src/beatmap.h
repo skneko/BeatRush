@@ -4,10 +4,11 @@
 #include <stdbool.h>
 
 typedef struct _Note {
-    unsigned long position; // ms since song started
+    unsigned long position;     // ms since song started
     unsigned char type;         // 0 = normal/sustained note
     bool topLane;               // true = top lane, false = bottom lane
     unsigned short duration;    // > 0 means sustained
+    bool hidden;
 } Note;
 
 typedef struct _Beatmap {
