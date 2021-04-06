@@ -6,18 +6,19 @@
 #include "draw.h"
 
 static Beatmap * beatmap;
-static Note *first_note_to_draw;
+static Note *next_note_to_draw;
 static unsigned int remaining_notes_to_draw;
 static float speed;
 
-static bool first_note_seen;
+static bool in_rest;
 
 #define OVER_UI_DEPTH               0.5f
 #define PAUSE_MENU_DEPTH            0.9f
 
 #define SCORE_LABEL_BUF_SIZE        13
 #define COMBO_LABEL_BUF_SIZE        13
-#define HEALTH_LABEL_BUF_SIZE       41
+#define HEALTH_ICON_AREA_BUF_SIZE   41
+#define REST_TIME_LABEL_BUF_SIZE    13
 #define DYN_TEXT_BUF_SIZE           4096
 
 #define COMBO_DRAW_THRESHOLD        5
@@ -26,7 +27,8 @@ static bool first_note_seen;
 #define COMBO_HIGHLIGHT_COLOR       C2D_ORANGE
 #define COMBO_FULL_COLOR            C2D_ORANGERED
 
-#define ATTENTION_WARN_THRESHOLD    3000
+#define ATTENTION_REST_THRESHOLD    3000
+#define ATTENTION_WARN_THRESHOLD    2500
 #define ATTENTION_WARN_MARGIN_X     20
 #define ATTENTION_WARN_MARGIN_Y     20
 #define ATTENTION_WARN_BASE         10
@@ -38,13 +40,13 @@ C2D_TextBuf dynamicTextBuf;
 
 void scene_init(Beatmap *const _beatmap) {
     beatmap = _beatmap;
-    first_note_to_draw = beatmap->notes;
+    next_note_to_draw = beatmap->notes;
     remaining_notes_to_draw = beatmap->note_count;
     speed = beatmap->approach_time / (TOP_SCREEN_WIDTH - HITLINE_LEFT_MARGIN);
 
-    dynamicTextBuf = C2D_TextBufNew(DYN_TEXT_BUF_SIZE);
+    in_rest = true;
 
-    first_note_seen = false;
+    dynamicTextBuf = C2D_TextBufNew(DYN_TEXT_BUF_SIZE);
 }
 
 void scene_end(void) {
@@ -75,10 +77,6 @@ static NoteDrawingResult draw_note(const Note *const note) {
         lane_y = TOP_SCREEN_HEIGHT - LANE_BOTTOM_MARGIN - LANE_HEIGHT + NOTE_RADIUS + NOTE_MARGIN;
     }
 
-    if (!first_note_seen) {
-        first_note_seen = true;
-    }
-
     if (!note->hidden) {
         C2D_DrawCircleSolid(
             note_x, lane_y, 0.0f, NOTE_RADIUS,
@@ -94,7 +92,7 @@ static NoteDrawingResult draw_note(const Note *const note) {
 static void draw_notes(void) {
     //printf("----------- %u\n", remaining_notes_to_draw);
 
-    Note *note_to_draw = first_note_to_draw;
+    Note *note_to_draw = next_note_to_draw;
     unsigned int remaining_notes_temp = remaining_notes_to_draw;
 
     bool keep_advancing = true;
@@ -103,7 +101,7 @@ static void draw_notes(void) {
             case NOTE_BEHIND: {
                 //printf("Left behind note at %lums.\n", note_to_draw->position);
                 remaining_notes_to_draw--;
-                first_note_to_draw++;
+                next_note_to_draw++;
                 break;
             }
 
@@ -171,7 +169,7 @@ static void draw_combo(void) {
 
 static void draw_health(void) {
     C2D_Text healthIconArea;
-    char buf[HEALTH_LABEL_BUF_SIZE];
+    char buf[HEALTH_ICON_AREA_BUF_SIZE];
 
     unsigned int health = logic_health();
 
@@ -186,15 +184,12 @@ static void draw_health(void) {
     C2D_TextOptimize(&healthIconArea);
     C2D_DrawText(
         &healthIconArea, C2D_WithColor | C2D_AtBaseline | C2D_AlignCenter, 
-        100.0f, 230.0f, 0.0f, 1.5f, 1.0f, 
+        130.0f, 230.0f, 0.0f, 1.5f, 1.0f, 
         logic_is_invencible() ? C2D_BLUE : C2D_RED);
 }
 
-static void draw_attention_warnings(void) {
-    long long time_until_first = (long long)first_note_to_draw->position - audioPlaybackPosition();
-
-    if (time_until_first < ATTENTION_WARN_THRESHOLD 
-        && flicker_is_visible(time_until_first, ATTENTION_WARN_PERIOD, ATTENTION_WARN_VISIBLE)) 
+static void draw_attention_warnings(long long time_until_next) {
+    if (flicker_is_visible(time_until_next, ATTENTION_WARN_PERIOD, ATTENTION_WARN_VISIBLE)) 
     {
         float left_x = ATTENTION_WARN_MARGIN_X;
         float right_x = TOP_SCREEN_WIDTH - ATTENTION_WARN_MARGIN_X;
@@ -205,6 +200,40 @@ static void draw_attention_warnings(void) {
         draw_sideways_triangle(right_x, top_y,    ATTENTION_WARN_BASE, ATTENTION_WARN_HEIGHT, -1,  1, C2D_RED, OVER_UI_DEPTH);
         draw_sideways_triangle(left_x,  bottom_y, ATTENTION_WARN_BASE, ATTENTION_WARN_HEIGHT,  1, -1, C2D_RED, OVER_UI_DEPTH);
         draw_sideways_triangle(right_x, bottom_y, ATTENTION_WARN_BASE, ATTENTION_WARN_HEIGHT, -1, -1, C2D_RED, OVER_UI_DEPTH);
+    }
+}
+
+static void draw_attention_cues(void) {
+    long long time_until_next = (long long)next_note_to_draw->position - audioPlaybackPosition();
+
+    if (time_until_next > ATTENTION_REST_THRESHOLD) {
+        in_rest = true;
+    }
+
+    if (in_rest) {
+        if (time_until_next <= beatmap->approach_time) {
+            in_rest = false;
+            return;
+        }
+
+        C2D_Text restTimeLabel;
+        char buf[REST_TIME_LABEL_BUF_SIZE];
+        C2D_TextBufClear(dynamicTextBuf);
+
+        if (time_until_next < ATTENTION_WARN_THRESHOLD)
+        {
+            draw_attention_warnings(time_until_next);
+            snprintf(buf, sizeof(buf), "READY");
+        } else {
+            snprintf(buf, sizeof(buf), "%0.3f", time_until_next / 1000.0f);
+        }
+
+        C2D_TextParse(&restTimeLabel, dynamicTextBuf, buf);
+        C2D_TextOptimize(&restTimeLabel);
+        C2D_DrawText(
+            &restTimeLabel, C2D_WithColor | C2D_AtBaseline,
+            TOP_SCREEN_CENTER_HOR - 20, TOP_SCREEN_CENTER_VER + 5, OVER_UI_DEPTH, 0.5f, 0.5f,
+            C2D_WHITE);
     }
 }
 
@@ -322,9 +351,7 @@ void scene_draw(void) {
     draw_combo();
     draw_health();
 
-    if (!first_note_seen) {
-        draw_attention_warnings();
-    }
+    draw_attention_cues();
 
     draw_debug_overlay();
 }
