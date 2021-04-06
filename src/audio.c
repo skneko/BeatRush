@@ -264,7 +264,7 @@ void audioThreadRoutine(void *const opusFile_) {
     s_song_ongoing = false;
 }
 
-bool audioInit(const char *path) {
+bool audioInit(void) {
     ndspInit();
     
     // Setup LightEvent for synchronisation of audioThread
@@ -273,25 +273,9 @@ bool audioInit(const char *path) {
     printf("Initalizing audio subsystem\n"
         "\n"
         "Using %d waveBufs, each of length %d bytes\n"
-        "    (%d samples; %.2lf ms @ %d Hz)\n"
-        "\n"
-        "Loading audio data from path: %s\n"
-        "\n",
+        "    (%d samples; %.2lf ms @ %d Hz)\n",
         ARRAY_SIZE(s_waveBufs), WAVEBUF_SIZE, SAMPLES_PER_BUF,
-        SAMPLES_PER_BUF * 1000.0 / SAMPLE_RATE, SAMPLE_RATE,
-        path);
-
-    // Open the Opus audio file
-    int error = 0;
-    audioFile = op_open_file(path, &error);
-    if(error) {
-        printf("Failed to open file: error %d (%s).\n", error,
-               opusStrError(error));
-        return false;
-    }
-
-    ogg_int64_t totalSamples = op_pcm_total(audioFile, -1);
-    printf("Total samples: %lld (%.2lf ms)\n", totalSamples, totalSamples * 1000.0 / SAMPLE_RATE);
+        SAMPLES_PER_BUF * 1000.0 / SAMPLE_RATE, SAMPLE_RATE);
 
     // Attempt audioInitHardware
     if(!audioInitHardware()) {
@@ -301,6 +285,26 @@ bool audioInit(const char *path) {
 
     // Set the ndsp sound frame callback which signals our audioThread
     ndspSetCallback(audioCallback, NULL);
+
+    s_song_ongoing = false;
+
+    return true;
+}
+
+bool audioSetSong(const char *path) {
+    printf("Loading audio data from path: %s\n", path);
+
+    // Open the Opus audio file
+    int error = 0;
+    audioFile = op_open_file(path, &error);
+    if (error) {
+        printf("Failed to open file: error %d (%s).\n", error,
+               opusStrError(error));
+        return false;
+    }
+
+    ogg_int64_t totalSamples = op_pcm_total(audioFile, -1);
+    printf("Total samples: %lld (%.2lf ms)\n", totalSamples, totalSamples * 1000.0 / SAMPLE_RATE);
 
     /* Spawn audio thread */
     // Set the thread priority to the main thread's priority ...

@@ -58,7 +58,8 @@ int main(int argc, char *argv[]) {
     Beatmap *beatmap = beatmap_load_from_file(beatmap_map);
 
     /* Initialize subsystems */
-    audioInit(beatmap_track);
+    audioInit();
+    audioSetSong(beatmap_track);
     logic_init(beatmap);
     scene_init(beatmap);
 
@@ -76,8 +77,6 @@ int main(int argc, char *argv[]) {
     C2D_Fini();
     C3D_Fini();
     gfxExit();
-
-    
 
     return EXIT_SUCCESS;
 }
