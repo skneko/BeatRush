@@ -176,7 +176,7 @@ static void draw_health(void) {
     C2D_TextBufClear(dynamicTextBuf);
     
     buf[0] = '\0';
-    for (int i = 0; i < health; i++) {
+    for (unsigned int i = 0; i < health; i++) {
         strcat(buf, "♥");
     }
 
