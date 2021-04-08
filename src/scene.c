@@ -36,7 +36,7 @@ static bool in_rest;
 #define ATTENTION_WARN_PERIOD       210
 #define ATTENTION_WARN_VISIBLE      100
 
-C2D_TextBuf dynamicTextBuf;
+static C2D_TextBuf dynamicTextBuf;
 
 void scene_init(Beatmap *const _beatmap) {
     beatmap = _beatmap;
