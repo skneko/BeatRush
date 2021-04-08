@@ -346,8 +346,24 @@ void draw_pause(void) {
         C2D_WHITE);
 }
 
+void draw_failure(void) {
+    C2D_Text failureLabel;
+    char buf[10];
+
+    C2D_TextBufClear(dynamicTextBuf);
+    snprintf(buf, sizeof(buf), "GAME OVER");
+    C2D_TextParse(&failureLabel, dynamicTextBuf, buf);
+    C2D_TextOptimize(&failureLabel);
+    C2D_DrawText(
+        &failureLabel, C2D_WithColor | C2D_AlignCenter,
+        TOP_SCREEN_CENTER_HOR, TOP_SCREEN_CENTER_VER - NOTE_RADIUS - 5, PAUSE_MENU_DEPTH, 1.5f, 1.5f,
+        C2D_RED);
+}
+
 void scene_draw(void) {
-    if (audioIsPaused()) {
+    if (logic_has_failed()) {
+        draw_failure();
+    } else if (audioIsPaused()) {
         draw_pause();
     }
 

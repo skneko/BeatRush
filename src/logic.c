@@ -50,6 +50,7 @@ static unsigned short health;
 static unsigned int remaining_invencibility;
 static unsigned int health_regen_time;
 static unsigned int time_to_health_regen;
+static bool has_failed;
 
 static void increase_score(int increment) {
     score += increment * combo_multiplier + combo / 10;
@@ -197,6 +198,7 @@ void logic_init() {
     remaining_invencibility = 0;
     health_regen_time = (unsigned int)(beatmap->approach_time * HEALTH_REGEN_TIME_MULT);
     time_to_health_regen = 0;
+    has_failed = false;
 }
 
 void logic_end(void) {
@@ -230,7 +232,8 @@ void logic_update(unsigned int dt) {
     update_health(dt);
     if (health == 0) {
         printf("--- FAIL ---\n");
-        // TODO: game over
+        has_failed = true;
+        audioPause();
     }
 
     if (k_down & KEY_A || k_down & KEY_B) {
@@ -259,4 +262,8 @@ unsigned short logic_health(void) {
 
 bool logic_is_invencible(void) {
     return remaining_invencibility > 0;
+}
+
+bool logic_has_failed(void) {
+    return has_failed;
 }

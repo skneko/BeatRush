@@ -13,5 +13,6 @@ extern unsigned int logic_combo(void);
 extern bool logic_is_full_combo(void);
 extern unsigned short logic_health(void);
 extern bool logic_is_invencible(void);
+extern bool logic_has_failed(void);
 
 #endif
