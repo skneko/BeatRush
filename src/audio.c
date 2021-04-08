@@ -52,22 +52,22 @@ static const size_t WAVEBUF_SIZE = SAMPLES_PER_BUF * CHANNELS_PER_SAMPLE
 
 OggOpusFile *audioFile = NULL;
 
-volatile int playheadPosition = 0;  // milliseconds since playback started
-int songTime = 0;
-int lastReportedPlayheadPosition = 0;
-u64 previousFrameTime;
+static volatile int playheadPosition = 0;  // milliseconds since playback started
+static int songTime = 0;
+static int lastReportedPlayheadPosition = 0;
+static u64 previousFrameTime;
 #ifdef DEBUG_AUDIO
-TickCounter playbackTimer;
+static TickCounter playbackTimer;
 #endif
 
-ndspWaveBuf s_waveBufs[3];
-int16_t *s_audioBuffer = NULL;
+static ndspWaveBuf s_waveBufs[3];
+static int16_t *s_audioBuffer = NULL;
 
-Thread audioThread;
-LightEvent s_event;
-volatile bool s_song_ongoing = false;   // Song has started but not finished
-volatile bool s_paused = false;
-volatile bool s_quit = false;  // Quit flag
+static Thread audioThread;
+static LightEvent s_event;
+static volatile bool s_song_ongoing = false;   // Song has started but not finished
+static volatile bool s_paused = false;
+static volatile bool s_quit = false;  // Quit flag
 
 // ---- HELPER FUNCTIONS ----
 
