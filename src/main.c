@@ -25,7 +25,9 @@ void main_loop(void)
         C2D_TargetClear(top_left, C2D_BLACK);
         C2D_SceneBegin(top_left);
 
-        director_main_loop();
+        if (!director_main_loop()) {
+            return;
+        }
 
         /* End frame */
         C2D_Flush();
@@ -64,14 +66,13 @@ int main()
     /* Initialize subsystems */
     audioInit();
     director_init();
-    director_set_audio_dt(true);            // FIXME
-    director_change_state(RUNNING_BEATMAP); // FIXME
+    director_set_audio_dt(false);
+    director_change_state(SONG_SELECTION_MENU);
 
     main_loop();
 
     /* Finalize subsystems */
-    scene_end();
-    logic_end();
+    director_end();
     audioExit();
 
     /* Finalize engine */

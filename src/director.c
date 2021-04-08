@@ -34,8 +34,6 @@ void director_init(void) {
     state_change_requested = false;
     quit_requested = false;
     using_audio_dt = false;
-
-    beatmap = beatmap_load_from_file("romfs:/beatmaps/allYouAre/beatmap.btrm"); //FIXME
 }
 
 void director_end(void) {
@@ -50,10 +48,10 @@ void director_change_state(GameState next_state) {
 
     switch (next_state) {
         case SONG_SELECTION_MENU: {
-            init = do_nothing;
-            update = do_nothing;
-            draw = do_nothing;
-            end = do_nothing;
+            init = menu_init;
+            update = menu_update;
+            draw = menu_draw;
+            end = menu_end;
             break;
         }
         case RUNNING_BEATMAP:
@@ -73,7 +71,11 @@ bool director_main_loop(void)
 {
     if (quit_requested)
     {
-        end();
+        if (state_change_requested) {
+            previous_end();
+        } else {
+            end();
+        }
         return false;
     }
 

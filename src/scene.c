@@ -39,6 +39,7 @@ static bool in_rest;
 static C2D_TextBuf dynamicTextBuf;
 
 void scene_init() {
+    director_set_audio_dt(true);
     logic_init();
 
     next_note_to_draw = beatmap->notes;
@@ -49,11 +50,11 @@ void scene_init() {
 
     dynamicTextBuf = C2D_TextBufNew(DYN_TEXT_BUF_SIZE);
 
-    audioSetSong("romfs:/beatmaps/allYouAre/track.opus"); // FIXME
     audioPlay();
 }
 
 void scene_end(void) {
+    director_set_audio_dt(false);
     logic_end();
 
     C2D_TextBufDelete(dynamicTextBuf);
