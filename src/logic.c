@@ -4,6 +4,7 @@
 
 #include "common.h"
 #include "audio.h"
+#include "director.h"
 
 #define HIT_WINDOW_PERFECT      43
 #define HIT_WINDOW_GOOD         91
@@ -30,7 +31,6 @@
 
 static unsigned long last_time;
 
-static Beatmap *beatmap;
 static Note *next_note_to_hit;
 static unsigned int remaining_notes_to_hit;
 static unsigned int notes_passed;
@@ -172,9 +172,9 @@ static void advance_notes(void) {
     }
 }
 
-static void update_health(unsigned long dt) {
-    time_to_health_regen = saturated_sub_llu(time_to_health_regen, dt);
-    remaining_invencibility = saturated_sub_llu(remaining_invencibility, dt);
+static void update_health(unsigned int dt) {
+    time_to_health_regen = saturated_sub_lu(time_to_health_regen, (unsigned long)dt);
+    remaining_invencibility = saturated_sub_lu(remaining_invencibility, (unsigned long)dt);
     
     if (health > 0 && health < HEALTH_MAX && time_to_health_regen == 0) {
         printf("HEALTH (+1) %hu -> %hu\n", health, health + 1);
@@ -184,10 +184,9 @@ static void update_health(unsigned long dt) {
     }
 }
 
-void logic_init(Beatmap *const _beatmap) {
+void logic_init() {
     last_time = 0;
 
-    beatmap = _beatmap;
     next_note_to_hit = beatmap->notes;
     remaining_notes_to_hit = beatmap->note_count;
     global_offset = beatmap->start_offset;
@@ -204,10 +203,27 @@ void logic_end(void) {
 
 }
 
-void logic_update() {
-    unsigned long time = audioPlaybackPosition();
-    unsigned long dt = time - last_time;
-    last_time = time;
+void logic_update(unsigned int dt) {
+    u32 k_down = hidKeysDown();
+
+    /* Pause on START */
+    if (k_down & KEY_START)
+    {
+        printf("\n** Toggle pause **\n");
+
+        if (audioIsPaused())
+        {
+            audioPlay();
+        }
+        else
+        {
+            audioPause();
+        }
+    }
+
+    if (!audioAdvancePlaybackPosition()) {
+        return;
+    }
 
     advance_notes();
 
@@ -217,14 +233,12 @@ void logic_update() {
         // TODO: game over
     }
 
-    u32 k_down = hidKeysDown();
-
     if (k_down & KEY_A || k_down & KEY_B) {
         action_hit();
     }
     if (k_down & KEY_X || k_down & KEY_Y) {
         action_jump();
-    }
+    }    
 }
 
 unsigned long logic_score(void) {

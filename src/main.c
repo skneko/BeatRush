@@ -10,19 +10,31 @@
 #include "scene.h"
 #include "beatmap.h"
 #include "logic.h"
+#include "director.h"
 
 C3D_RenderTarget *top_left;
 
-C2D_SpriteSheet test_spritesheet;
+void main_loop(void)
+{
+    while (aptMainLoop())
+    {
+        hidScanInput();
 
-void main_loop(void);
-void load_sprites(void);
-void sprite_from_sheet(C2D_Sprite *sprite, C2D_SpriteSheet sheet, size_t index);
-void draw_sprite(C2D_Sprite *sprite, float x, float y, float depth, float radians);
+        /* Begin frame */
+        C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
+        C2D_TargetClear(top_left, C2D_BLACK);
+        C2D_SceneBegin(top_left);
 
-static const char *BEATMAP = "popStars"; // FIXME
+        director_main_loop();
 
-int main(int argc, char *argv[]) {
+        /* End frame */
+        C2D_Flush();
+        C3D_FrameEnd(0);
+    }
+}
+
+int main()
+{
     /* Enable N3DS 804MHz operation, where available */
     osSetSpeedupEnable(true);
 
@@ -48,22 +60,13 @@ int main(int argc, char *argv[]) {
     srand(time(NULL));
 
     /* Game code */
-    load_sprites();
-
-    char beatmap_map[100];
-    snprintf(beatmap_map, sizeof(beatmap_map), "romfs:/beatmaps/%s/beatmap.btrm", BEATMAP);
-    char beatmap_track[100];
-    snprintf(beatmap_track, sizeof(beatmap_track), "romfs:/beatmaps/%s/track.opus", BEATMAP);
-
-    Beatmap *beatmap = beatmap_load_from_file(beatmap_map);
 
     /* Initialize subsystems */
     audioInit();
-    audioSetSong(beatmap_track);
-    logic_init(beatmap);
-    scene_init(beatmap);
+    director_init();
+    director_set_audio_dt(true);            // FIXME
+    director_change_state(RUNNING_BEATMAP); // FIXME
 
-    audioPlay();
     main_loop();
 
     /* Finalize subsystems */
@@ -71,64 +74,10 @@ int main(int argc, char *argv[]) {
     logic_end();
     audioExit();
 
-    free(beatmap);
-
     /* Finalize engine */
     C2D_Fini();
     C3D_Fini();
     gfxExit();
 
     return EXIT_SUCCESS;
-}
-
-void main_loop(void) {
-    while (aptMainLoop()) {
-        hidScanInput();
-
-        /* Begin frame */
-        C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
-        C2D_TargetClear(top_left, C2D_BLACK);
-        C2D_SceneBegin(top_left);
-
-        if (audioAdvancePlaybackPosition()) {
-            logic_update();
-        }
-        scene_draw();
-
-        /* Pause on START */
-        u32 k_down = hidKeysDown();
-        if (k_down & KEY_START) {
-            printf("\n** Toggle pause **\n");
-
-            if (audioIsPaused()) {
-                audioPlay();
-            } else {
-                audioPause();
-            }
-        }
-
-        /* End frame */
-        C2D_Flush();
-        C3D_FrameEnd(0);
-    }
-}
-
-// FIXME: for reference, delete later
-void load_sprites(void) {
-    test_spritesheet = C2D_SpriteSheetLoad("romfs:/gfx/test_sprites.t3x");
-    if (!test_spritesheet) {
-        debug_printf("Failed to load spritesheet");
-    }
-}
-
-void sprite_from_sheet(C2D_Sprite *sprite, C2D_SpriteSheet sheet, size_t index) {
-    C2D_SpriteFromSheet(sprite, sheet, index);
-    C2D_SpriteSetCenter(sprite, 0.5f, 0.5f);
-}
-
-void draw_sprite(C2D_Sprite *sprite, float x, float y, float depth, float radians) {
-    C2D_SpriteSetPos(sprite, x, y);
-    C2D_SpriteSetRotation(sprite, radians);
-    C2D_SpriteSetDepth(sprite, depth);
-    C2D_DrawSprite(sprite);
 }

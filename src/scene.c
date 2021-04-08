@@ -4,8 +4,8 @@
 #include "audio.h"
 #include "logic.h"
 #include "draw.h"
+#include "director.h"
 
-static Beatmap * beatmap;
 static Note *next_note_to_draw;
 static unsigned int remaining_notes_to_draw;
 static float speed;
@@ -38,8 +38,9 @@ static bool in_rest;
 
 static C2D_TextBuf dynamicTextBuf;
 
-void scene_init(Beatmap *const _beatmap) {
-    beatmap = _beatmap;
+void scene_init() {
+    logic_init();
+
     next_note_to_draw = beatmap->notes;
     remaining_notes_to_draw = beatmap->note_count;
     speed = beatmap->approach_time / (TOP_SCREEN_WIDTH - HITLINE_LEFT_MARGIN);
@@ -47,9 +48,14 @@ void scene_init(Beatmap *const _beatmap) {
     in_rest = true;
 
     dynamicTextBuf = C2D_TextBufNew(DYN_TEXT_BUF_SIZE);
+
+    audioSetSong("romfs:/beatmaps/allYouAre/track.opus"); // FIXME
+    audioPlay();
 }
 
 void scene_end(void) {
+    logic_end();
+
     C2D_TextBufDelete(dynamicTextBuf);
 }
 

@@ -3,10 +3,10 @@
 
 #include "beatmap.h"
 
-extern void logic_init(Beatmap *const beatmap);
+extern void logic_init(void);
 extern void logic_end(void);
 
-extern void logic_update(void);
+extern void logic_update(unsigned int dt);
 
 extern unsigned long logic_score(void);
 extern unsigned int logic_combo(void);
