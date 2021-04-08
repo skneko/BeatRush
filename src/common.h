@@ -32,7 +32,7 @@
 #define C2D_ORANGE              C2D_Color32(0xFF, 0xA5, 0x00, 0xFF)
 #define C2D_ORANGERED           C2D_Color32(0xFF, 0x45, 0x00, 0xFF)
 
-inline unsigned long saturated_sub_llu(unsigned long lhs, unsigned long rhs) {
+inline unsigned long saturated_sub_lu(unsigned long lhs, unsigned long rhs) {
     if (rhs > lhs) {
         return 0;
     } else {
