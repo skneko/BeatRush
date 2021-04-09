@@ -211,36 +211,38 @@ static void draw_attention_warnings(long long time_until_next) {
 }
 
 static void draw_attention_cues(void) {
-    long long time_until_next = (long long)next_note_to_draw->position - audioPlaybackPosition();
+    if (remaining_notes_to_draw > 1) {
+        long long time_until_next = (long long)next_note_to_draw->position - audioPlaybackPosition();
 
-    if (time_until_next > ATTENTION_REST_THRESHOLD) {
-        in_rest = true;
-    }
-
-    if (in_rest) {
-        if (time_until_next <= beatmap->approach_time) {
-            in_rest = false;
-            return;
+        if (time_until_next > ATTENTION_REST_THRESHOLD) {
+            in_rest = true;
         }
 
-        C2D_Text restTimeLabel;
-        char buf[REST_TIME_LABEL_BUF_SIZE];
-        C2D_TextBufClear(dynamicTextBuf);
+        if (in_rest) {
+            if (time_until_next <= beatmap->approach_time) {
+                in_rest = false;
+                return;
+            }
 
-        if (time_until_next < ATTENTION_WARN_THRESHOLD)
-        {
-            draw_attention_warnings(time_until_next);
-            snprintf(buf, sizeof(buf), "READY");
-        } else {
-            snprintf(buf, sizeof(buf), "%0.3f", time_until_next / 1000.0f);
+            C2D_Text restTimeLabel;
+            char buf[REST_TIME_LABEL_BUF_SIZE];
+            C2D_TextBufClear(dynamicTextBuf);
+
+            if (time_until_next < ATTENTION_WARN_THRESHOLD)
+            {
+                draw_attention_warnings(time_until_next);
+                snprintf(buf, sizeof(buf), "READY");
+            } else {
+                snprintf(buf, sizeof(buf), "%0.3f", time_until_next / 1000.0f);
+            }
+
+            C2D_TextParse(&restTimeLabel, dynamicTextBuf, buf);
+            C2D_TextOptimize(&restTimeLabel);
+            C2D_DrawText(
+                &restTimeLabel, C2D_WithColor | C2D_AtBaseline,
+                TOP_SCREEN_CENTER_HOR - 20, TOP_SCREEN_CENTER_VER + 5, OVER_UI_DEPTH, 0.5f, 0.5f,
+                C2D_WHITE);
         }
-
-        C2D_TextParse(&restTimeLabel, dynamicTextBuf, buf);
-        C2D_TextOptimize(&restTimeLabel);
-        C2D_DrawText(
-            &restTimeLabel, C2D_WithColor | C2D_AtBaseline,
-            TOP_SCREEN_CENTER_HOR - 20, TOP_SCREEN_CENTER_VER + 5, OVER_UI_DEPTH, 0.5f, 0.5f,
-            C2D_WHITE);
     }
 }
 
