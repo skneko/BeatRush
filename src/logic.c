@@ -209,7 +209,7 @@ void logic_update(unsigned int dt) {
     u32 k_down = hidKeysDown();
 
     /* Pause on START */
-    if (k_down & KEY_START)
+    if ((k_down & KEY_START) && !logic_has_failed())
     {
         printf("\n** Toggle pause **\n");
 
