@@ -67,8 +67,16 @@ void scene_init(Beatmap *const _beatmap) {
     bg_sprite_sheet = C2D_SpriteSheetLoad("romfs:/gfx/bg.t3x"); //bg        ### TO DRAW ###
     if (!bg_sprite_sheet) svcBreak(USERBREAK_PANIC);
 
+    //------------------------------------------------------------------------------------------------
     //init char sprite to default state
+    C2D_Sprite* debug_player_sprite = &char_sprites[0]; //the sprite for the bg skybox, give or take you know what I mean
+    C2D_SpriteFromSheet(debug_player_sprite, char_sprite_sheet, 0); 
+    C2D_SpriteSetCenter(debug_player_sprite, .5f, .5f);
+    C2D_SpriteSetPos(debug_player_sprite, HITLINE_LEFT_MARGIN, TOP_SCREEN_HEIGHT - LANE_BOTTOM_MARGIN - LANE_HEIGHT / 2);
+    C2D_SpriteSetDepth(debug_player_sprite, .9f);
+    C2D_SpriteScale(debug_player_sprite, 2, 2);
 
+    //------------------------------------------------------------------------------------------------
     //init bg sprite to default state (lmao OK)
     C2D_Sprite* bg_sprite = &bg_sprites[0]; //the sprite for the bg skybox, give or take you know what I mean
     C2D_SpriteFromSheet(bg_sprite, bg_sprite_sheet, 0); 
@@ -119,6 +127,7 @@ void scene_init(Beatmap *const _beatmap) {
     C2D_SpriteSetDepth(birdo_2, .2f);
     bird_dir = -1;
 
+    //------------------------------------------------------------------------------------------------
     //init note sprites someway somehow yipee
 }
 
@@ -243,6 +252,9 @@ static void draw_combo(void) {
 
 static void draw_player_sprite(void){
     //SOMETHING HERE
+    //player debug sprite
+    C2D_Sprite* debug_player_sprite = &char_sprites[0];
+    C2D_DrawSprite(debug_player_sprite);
 }
 
 static void draw_bg_sprites(void){
