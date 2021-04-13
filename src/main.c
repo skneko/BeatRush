@@ -120,15 +120,3 @@ void load_sprites(void) {
         debug_printf("Failed to load run_char_anim spritesheet");
     }
 }
-
-void sprite_from_sheet(C2D_Sprite *sprite, C2D_SpriteSheet sheet, size_t index) {
-    C2D_SpriteFromSheet(sprite, sheet, index);
-    C2D_SpriteSetCenter(sprite, 0.5f, 0.5f);
-}
-
-void draw_sprite(C2D_Sprite *sprite, float x, float y, float depth, float radians) {
-    C2D_SpriteSetPos(sprite, x, y);
-    C2D_SpriteSetRotation(sprite, radians);
-    C2D_SpriteSetDepth(sprite, depth);
-    C2D_DrawSprite(sprite);
-}
