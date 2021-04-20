@@ -24,7 +24,7 @@ C2D_TextBuf comboLabelBuf;
 
 //SPRITES
 #define MAX_CHAR_SPRITES    1  //SUGGESTIVE     ###- NOT FINAL -###
-#define MAX_NOTE_SPRITES    20   //SUGGESTIVE     ###- NOT FINAL -###
+#define MAX_NOTE_SPRITES    50   //SUGGESTIVE     ###- NOT FINAL -###
 #define MAX_BG_SPRITES      35  //SUGGESTIVE     ###- NOT FINAL -###
 C2D_Sprite char_sprites[MAX_CHAR_SPRITES];
 C2D_Sprite note_sprites[MAX_NOTE_SPRITES];
@@ -62,8 +62,8 @@ void scene_init(Beatmap *const _beatmap) {
     //load sheets from gfx
     char_sprite_sheet = C2D_SpriteSheetLoad("romfs:/gfx/run_char_anim.t3x"); //char
     if (!char_sprite_sheet) svcBreak(USERBREAK_PANIC);
-    //  note_sprite_sheet = C2D_SpriteSheetLoad("romfs:/gfx/note.t3x"); //note  ### TO DRAW ###
-    //  if (!note_sprite_sheet) svcBreak(USERBREAK_PANIC);
+    note_sprite_sheet = C2D_SpriteSheetLoad("romfs:/gfx/note.t3x"); //note  ### TO DRAW ###
+    if (!note_sprite_sheet) svcBreak(USERBREAK_PANIC);
     bg_sprite_sheet = C2D_SpriteSheetLoad("romfs:/gfx/bg.t3x"); //bg        ### TO DRAW ###
     if (!bg_sprite_sheet) svcBreak(USERBREAK_PANIC);
 
@@ -129,6 +129,14 @@ void scene_init(Beatmap *const _beatmap) {
 
     //------------------------------------------------------------------------------------------------
     //init note sprites someway somehow yipee
+    for(int i = 0; i < MAX_NOTE_SPRITES; i++){
+        C2D_Sprite* note_sprite = &note_sprites[i]; //initialize the note sprites
+        C2D_SpriteFromSheet(note_sprite, note_sprite_sheet, 0); 
+        C2D_SpriteSetCenter(note_sprite, .5f, .5f);
+        C2D_SpriteSetPos(note_sprite, 0, 0);
+        //C2D_SpriteScale(note_sprite, 1.5f, 1.5f);
+        C2D_SpriteSetDepth(note_sprite, .5f);
+    }
 }
 
 void scene_end(void) {
@@ -141,7 +149,7 @@ typedef enum _NoteDrawingResult {
     NOTE_AHEAD
 } NoteDrawingResult;
 
-static NoteDrawingResult draw_note(const Note *const note) {
+static NoteDrawingResult draw_note(const Note *const note, int noteId) {
     long long int note_remaining_time = (long long int)note->position - audioPlaybackPosition();
     float note_x = (float)note_remaining_time / speed + HITLINE_LEFT_MARGIN;
 
@@ -159,10 +167,14 @@ static NoteDrawingResult draw_note(const Note *const note) {
         lane_y = TOP_SCREEN_HEIGHT - LANE_BOTTOM_MARGIN - LANE_HEIGHT + NOTE_RADIUS + NOTE_MARGIN;
     }
 
-    // dibujar nota SUSTITUIR POR SPRITE
-    C2D_DrawCircleSolid(
-        note_x, lane_y, DEBUG_DEPTH, NOTE_RADIUS,
-        C2D_PURPLE);
+    // dibujar nota SUSTITUIR POR SPRITE    
+    C2D_Sprite* note_sprite = &note_sprites[noteId];
+    C2D_SpriteSetPos(note_sprite, floor(note_x), floor(lane_y));
+    note_sprite->image = C2D_SpriteSheetGetImage(note_sprite_sheet, (frame%12 < 6) ? 0 : 1); //animate
+    C2D_DrawSprite(note_sprite);
+    //C2D_DrawCircleSolid(
+    //    note_x, lane_y, DEBUG_DEPTH, NOTE_RADIUS,
+    //    C2D_PURPLE);
     C2D_DrawLine(note_x, lane_y - NOTE_RADIUS, C2D_RED,
         note_x, lane_y + NOTE_RADIUS, C2D_RED,
         1.0f, DEBUG_DEPTH + 1);
@@ -177,8 +189,9 @@ static void draw_notes(void) {
     unsigned int remaining_notes_temp = remaining_notes_to_draw;
 
     bool keep_advancing = true;
+    int i = 0;
     while (keep_advancing && remaining_notes_temp > 0) {
-        switch (draw_note(note_to_draw)) {
+        switch (draw_note(note_to_draw, i)) {
             case NOTE_BEHIND: {
                 //printf("Left behind note at %lums.\n", note_to_draw->position);
                 remaining_notes_to_draw--;
@@ -201,6 +214,7 @@ static void draw_notes(void) {
 
         remaining_notes_temp--;
         note_to_draw++;
+        i++;
     }
 }
 
