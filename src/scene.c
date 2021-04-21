@@ -160,9 +160,11 @@ static NoteDrawingResult draw_note(const Note *const note, int noteId) {
         return NOTE_AHEAD;
     }
 
+    int offset = 0;
     float lane_y;
     if (note->topLane) {
         lane_y = LANE_TOP_MARGIN + NOTE_RADIUS + NOTE_MARGIN;
+        offset = 2;
     } else {
         lane_y = TOP_SCREEN_HEIGHT - LANE_BOTTOM_MARGIN - LANE_HEIGHT + NOTE_RADIUS + NOTE_MARGIN;
     }
@@ -170,7 +172,7 @@ static NoteDrawingResult draw_note(const Note *const note, int noteId) {
     // dibujar nota SUSTITUIR POR SPRITE    
     C2D_Sprite* note_sprite = &note_sprites[noteId];
     C2D_SpriteSetPos(note_sprite, floor(note_x), floor(lane_y));
-    note_sprite->image = C2D_SpriteSheetGetImage(note_sprite_sheet, (frame%12 < 6) ? 0 : 1); //animate
+    note_sprite->image = C2D_SpriteSheetGetImage(note_sprite_sheet, (frame%24 < 12) ? offset : offset + 1); //animate
     C2D_DrawSprite(note_sprite);
     //C2D_DrawCircleSolid(
     //    note_x, lane_y, DEBUG_DEPTH, NOTE_RADIUS,
