@@ -172,6 +172,9 @@ elf : bootstrap
 citra : bootstrap
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile $@
 
+citra-qt : bootstrap
+	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile $@
+
 release : bootstrap
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile $@
 
@@ -226,6 +229,7 @@ ifeq ($(OS),Windows_NT)
 	MAKEROM = makerom.exe
 	BANNERTOOL = bannertool.exe
 	CITRA = citra.exe
+	CITRA-QT = citra-qt.exe
 	_3DSXTOOL = 3dsxtool.exe
 	SMDHTOOL = smdhtool.exe
 	TEX3DS = tex3ds.exe
@@ -233,6 +237,7 @@ else
 	MAKEROM = makerom
 	BANNERTOOL = bannertool
 	CITRA = citra
+	CITRA-QT = citra-qt
 	_3DSXTOOL = 3dsxtool
 	SMDHTOOL = smdhtool
 	TEX3DS = tex3ds
@@ -241,7 +246,7 @@ endif
 #---------------------------------------------------------------------------------
 # main targets
 #---------------------------------------------------------------------------------
-.PHONY: all 3dsx cia elf 3ds citra release
+.PHONY: all 3dsx cia elf 3ds citra citra-qt release
 
 $(OUTPUT_FILE).3dsx : $(OUTPUT_FILE).elf $(_3DSXDEPS)
 	$(_3DSXTOOL) $< $@ $(_3DSXFLAGS)
@@ -290,6 +295,9 @@ elf : $(OUTPUT_FILE).elf
 
 citra : 3dsx
 	$(CITRA) $(OUTPUT_FILE).3dsx
+
+citra-qt: 3dsx
+	$(CITRA-QT) $(OUTPUT_FILE).3dsx
 
 release : $(OUTPUT_FILE).zip cia 3ds
 

@@ -16,6 +16,7 @@ This project uses [GNU Make] in order to build the different targets available f
 | 3dsx        | Builds `BeatRush.3dsx` and `BeatRush.smdh`.
 | cia         | Builds `BeatRush.cia`. <sup>1</sup>
 | citra       | Builds and automatically runs `citra` for testing.<sup>1,2</sup>
+| citra-qt    | Builds and automatically runs `citra-qt` for testing and debugging.<sup>1,2</sup>
 | elf         | Builds `BeatRush.elf`.
 | release     | Release build, creates a `cia`, `3ds`, and a zip file containing the `smdh` and `3dsx`. <sup>3</sup>
 
