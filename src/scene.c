@@ -63,7 +63,7 @@ int frame;
 int w; //since all fg buildings have different widths I need a variable to see where to put the next sprite
 int bird_dir;
 
-static C2D_TextBuf dynamicTextBuf;
+static C2D_TextBuf dynamic_text_buf;
 
 void scene_init() {
 	director_set_audio_dt(true);
@@ -75,7 +75,7 @@ void scene_init() {
 
 	in_rest = true;
 
-	dynamicTextBuf = C2D_TextBufNew(DYN_TEXT_BUF_SIZE);
+	dynamic_text_buf = C2D_TextBufNew(DYN_TEXT_BUF_SIZE);
 
 	//############ SPRITE LOADER ##################
 
@@ -171,7 +171,7 @@ void scene_end(void) {
 	director_set_audio_dt(false);
 	logic_end();
 
-	C2D_TextBufDelete(dynamicTextBuf);
+	C2D_TextBufDelete(dynamic_text_buf);
 }
 
 typedef enum _NoteDrawingResult {
@@ -259,9 +259,9 @@ static void draw_score(void) {
 
 	unsigned long score = logic_score();
 
-	C2D_TextBufClear(dynamicTextBuf);
+	C2D_TextBufClear(dynamic_text_buf);
 	snprintf(buf, sizeof(buf), "%06lu", score);
-	C2D_TextParse(&scoreLabel, dynamicTextBuf, buf);
+	C2D_TextParse(&scoreLabel, dynamic_text_buf, buf);
 	C2D_TextOptimize(&scoreLabel);
 	//dibujar texto ########################### PUNTUACION ######
 	C2D_DrawText(
@@ -287,9 +287,9 @@ static void draw_combo(void) {
 	}
 
 	if (combo > COMBO_DRAW_THRESHOLD) {
-		C2D_TextBufClear(dynamicTextBuf);
+		C2D_TextBufClear(dynamic_text_buf);
 		snprintf(buf, sizeof(buf), "%u", combo);
-		C2D_TextParse(&comboLabel, dynamicTextBuf, buf);
+		C2D_TextParse(&comboLabel, dynamic_text_buf, buf);
 		C2D_TextOptimize(&comboLabel);
 		//dibujar texto ############################## COMBO ##############
 		C2D_DrawText(
@@ -305,14 +305,14 @@ static void draw_health(void) {
 
 	unsigned int health = logic_health();
 
-	C2D_TextBufClear(dynamicTextBuf);
+	C2D_TextBufClear(dynamic_text_buf);
 
 	buf[0] = '\0';
 	for (unsigned int i = 0; i < health; i++) {
 		strcat(buf, "♥");
 	}
 
-	C2D_TextParse(&healthIconArea, dynamicTextBuf, buf);
+	C2D_TextParse(&healthIconArea, dynamic_text_buf, buf);
 	C2D_TextOptimize(&healthIconArea);
 	C2D_DrawText(
 		&healthIconArea, C2D_WithColor | C2D_AtBaseline | C2D_AlignCenter,
@@ -350,7 +350,7 @@ static void draw_attention_cues(void) {
 
 			C2D_Text restTimeLabel;
 			char buf[REST_TIME_LABEL_BUF_SIZE];
-			C2D_TextBufClear(dynamicTextBuf);
+			C2D_TextBufClear(dynamic_text_buf);
 
 			if (time_until_next < ATTENTION_WARN_THRESHOLD) {
 				draw_attention_warnings(time_until_next);
@@ -359,7 +359,7 @@ static void draw_attention_cues(void) {
 				snprintf(buf, sizeof(buf), "%0.3f", time_until_next / 1000.0f);
 			}
 
-			C2D_TextParse(&restTimeLabel, dynamicTextBuf, buf);
+			C2D_TextParse(&restTimeLabel, dynamic_text_buf, buf);
 			C2D_TextOptimize(&restTimeLabel);
 			C2D_DrawText(
 				&restTimeLabel, C2D_WithColor | C2D_AtBaseline,
@@ -457,9 +457,9 @@ static void draw_debug_song_time(void) {
 	C2D_Text songTimeLabel;
 	char buf[10];
 
-	C2D_TextBufClear(dynamicTextBuf);
+	C2D_TextBufClear(dynamic_text_buf);
 	snprintf(buf, sizeof(buf), "%05ld", audioPlaybackPosition());
-	C2D_TextParse(&songTimeLabel, dynamicTextBuf, buf);
+	C2D_TextParse(&songTimeLabel, dynamic_text_buf, buf);
 	C2D_TextOptimize(&songTimeLabel);
 	C2D_DrawText(
 		&songTimeLabel, C2D_WithColor | C2D_AtBaseline,
@@ -546,9 +546,9 @@ void draw_pause(void) {
 	C2D_Text pauseLabel;
 	char buf[PAUSE_LABEL_BUF_SIZE];
 
-	C2D_TextBufClear(dynamicTextBuf);
+	C2D_TextBufClear(dynamic_text_buf);
 	snprintf(buf, sizeof(buf), "PAUSE");
-	C2D_TextParse(&pauseLabel, dynamicTextBuf, buf);
+	C2D_TextParse(&pauseLabel, dynamic_text_buf, buf);
 	C2D_TextOptimize(&pauseLabel);
 	C2D_DrawText(
 		&pauseLabel, C2D_WithColor | C2D_AlignCenter,
@@ -560,9 +560,9 @@ void draw_failure(void) {
 	C2D_Text failureLabel;
 	char buf[10];
 
-	C2D_TextBufClear(dynamicTextBuf);
+	C2D_TextBufClear(dynamic_text_buf);
 	snprintf(buf, sizeof(buf), "GAME OVER");
-	C2D_TextParse(&failureLabel, dynamicTextBuf, buf);
+	C2D_TextParse(&failureLabel, dynamic_text_buf, buf);
 	C2D_TextOptimize(&failureLabel);
 	C2D_DrawText(
 		&failureLabel, C2D_WithColor | C2D_AlignCenter,
