@@ -19,6 +19,7 @@ static bool in_rest;
 #define COMBO_LABEL_BUF_SIZE        13
 #define HEALTH_ICON_AREA_BUF_SIZE   41
 #define REST_TIME_LABEL_BUF_SIZE    13
+#define PAUSE_LABEL_BUF_SIZE        13
 #define DYN_TEXT_BUF_SIZE           4096
 
 #define COMBO_DRAW_THRESHOLD        5
@@ -337,7 +338,7 @@ static void draw_debug_overlay(void) {
 
 void draw_pause(void) {
     C2D_Text pauseLabel;
-    char buf[10];
+    char buf[PAUSE_LABEL_BUF_SIZE];
 
     C2D_TextBufClear(dynamicTextBuf);
     snprintf(buf, sizeof(buf), "PAUSE");

@@ -115,6 +115,11 @@ Beatmap *select_beatmap(void) {
 void menu_update(__attribute__((unused)) unsigned int dt) {
     u32 k_down = hidKeysDown();
 
+    if (k_down & KEY_A) {
+        beatmap = select_beatmap();             // FIXME
+        director_change_state(RUNNING_BEATMAP);
+    }
+
     if ((k_down & KEY_UP) | (k_down & KEY_CSTICK_UP)) {
         if (selected_option > 0) {
             selected_option = (selected_option - 1) % option_count;
@@ -124,11 +129,6 @@ void menu_update(__attribute__((unused)) unsigned int dt) {
     }
     if ((k_down & KEY_DOWN) | (k_down & KEY_CSTICK_DOWN)) {
         selected_option = (selected_option + 1) % option_count;
-    }
-
-    if (k_down & KEY_A) {
-        beatmap = select_beatmap();             // FIXME
-        director_change_state(RUNNING_BEATMAP);
     }
 }
 

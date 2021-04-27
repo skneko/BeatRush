@@ -109,4 +109,13 @@ void director_request_quit(void) {
 
 void director_set_audio_dt(bool use_audio_dt) {
     using_audio_dt = use_audio_dt;
+
+    if (using_audio_dt)
+    {
+        previous_time = audioPlaybackPosition();
+    }
+    else
+    {
+        previous_time = osGetTime();
+    }
 }
