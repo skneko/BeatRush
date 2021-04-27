@@ -1,0 +1,9 @@
+--atlas -f rgba8888 -z auto
+bg_skybox.png
+bg_building.png
+fg_building_1.png
+fg_building_2.png
+fg_building_3.png
+bg_road.png
+bird_1.png
+bird_2.png

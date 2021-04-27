@@ -1,0 +1,5 @@
+--atlas -f rgba8888 -z auto
+tank_sprite_1.png
+tank_sprite_2.png
+ufo_sprite_1.png
+ufo_sprite_2.png
