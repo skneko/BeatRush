@@ -22,100 +22,94 @@ void (*draw)(void);
 void (*end)(void);
 void (*previous_end)(void);
 
-void do_nothing() { }
+void do_nothing() {
+}
 
 void director_init(void) {
-    init = do_nothing;
-    update = do_nothing;
-    draw = do_nothing;
-    end = do_nothing;
-    previous_end = do_nothing;
+	init = do_nothing;
+	update = do_nothing;
+	draw = do_nothing;
+	end = do_nothing;
+	previous_end = do_nothing;
 
-    state_change_requested = false;
-    quit_requested = false;
-    using_audio_dt = false;
+	state_change_requested = false;
+	quit_requested = false;
+	using_audio_dt = false;
 }
 
 void director_end(void) {
-    if (beatmap != NULL) {  // FIXME
-        free(beatmap);
-    }
+	if (beatmap != NULL) {  // FIXME
+		free(beatmap);
+	}
 }
 
 void director_change_state(GameState next_state) {
-    previous_end = end;
-    state_change_requested = true;
+	previous_end = end;
+	state_change_requested = true;
 
-    switch (next_state) {
-        case SONG_SELECTION_MENU: {
-            init = menu_init;
-            update = menu_update;
-            draw = menu_draw;
-            end = menu_end;
-            break;
-        }
-        case RUNNING_BEATMAP:
-        {
-            init = scene_init;
-            update = logic_update;
-            draw = scene_draw;
-            end = scene_end;
-            break;
-        }
-    }
+	switch (next_state) {
+	case SONG_SELECTION_MENU: {
+		init = menu_init;
+		update = menu_update;
+		draw = menu_draw;
+		end = menu_end;
+		break;
+	}
 
-    state = next_state;
+	case RUNNING_BEATMAP:
+	{
+		init = scene_init;
+		update = logic_update;
+		draw = scene_draw;
+		end = scene_end;
+		break;
+	}
+	}
+
+	state = next_state;
 }
 
-bool director_main_loop(void)
-{
-    if (quit_requested)
-    {
-        if (state_change_requested) {
-            previous_end();
-        } else {
-            end();
-        }
-        return false;
-    }
+bool director_main_loop(void){
+	if (quit_requested) {
+		if (state_change_requested) {
+			previous_end();
+		} else {
+			end();
+		}
+		return false;
+	}
 
-    if (state_change_requested) {
-        previous_end();
-        init();
-        state_change_requested = false;
-    }
+	if (state_change_requested) {
+		previous_end();
+		init();
+		state_change_requested = false;
+	}
 
-    u64 current_time;
-    if (using_audio_dt)
-    {
-        current_time = audioPlaybackPosition();
-    }
-    else
-    {
-        current_time = osGetTime();
-    }
-    unsigned int dt = (unsigned int)(current_time - previous_time);
-    previous_time = current_time;
+	u64 current_time;
+	if (using_audio_dt) {
+		current_time = audioPlaybackPosition();
+	}else {
+		current_time = osGetTime();
+	}
+	unsigned int dt = (unsigned int)(current_time - previous_time);
+	previous_time = current_time;
 
-    update(dt);
-    draw();
+	update(dt);
+	draw();
 
-    return true;
+	return true;
 }
 
 void director_request_quit(void) {
-    quit_requested = true;
+	quit_requested = true;
 }
 
 void director_set_audio_dt(bool use_audio_dt) {
-    using_audio_dt = use_audio_dt;
+	using_audio_dt = use_audio_dt;
 
-    if (using_audio_dt)
-    {
-        previous_time = audioPlaybackPosition();
-    }
-    else
-    {
-        previous_time = osGetTime();
-    }
+	if (using_audio_dt) {
+		previous_time = audioPlaybackPosition();
+	}else {
+		previous_time = osGetTime();
+	}
 }
