@@ -14,6 +14,9 @@
 
 C3D_RenderTarget *top_left;
 
+C2D_SpriteSheet test_spritesheet;
+C2D_SpriteSheet run_char_anim;
+
 void main_loop(void)
 {
     while (aptMainLoop())
@@ -81,4 +84,17 @@ int main()
     gfxExit();
 
     return EXIT_SUCCESS;
+}
+
+// FIXME: for reference, delete later
+// FIXME: modified but never called?
+void load_sprites(void) {
+    test_spritesheet = C2D_SpriteSheetLoad("romfs:/gfx/test_sprites.t3x");
+    run_char_anim = C2D_SpriteSheetLoad("romfs:/gfx/run_char_anim.t3x");
+    if (!test_spritesheet) {
+        debug_printf("Failed to load test_spritesheet spritesheet");
+    }
+    if (!run_char_anim) {
+        debug_printf("Failed to load run_char_anim spritesheet");
+    }
 }
