@@ -3,6 +3,7 @@
 #include "common.h"
 #include "audio.h"
 #include "logic.h"
+#include "stdlib.h"
 
 static Beatmap *beatmap;
 static Note *first_note_to_draw;
