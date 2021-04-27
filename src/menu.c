@@ -13,7 +13,7 @@
 #define MENU_OPTION_SEP         18
 #define MENU_RADIUS_EFFECT      0.6f
 
-static C2D_TextBuf dynamicTextBuf;
+static C2D_TextBuf dynamic_text_buf;
 
 const char *options[] = {
 	"[Easy] K/DA - POP/STARS",
@@ -26,7 +26,7 @@ int option_count = 4;
 int selected_option;
 
 void menu_init(void) {
-	dynamicTextBuf = C2D_TextBufNew(DYN_TEXT_BUF_SIZE);
+	dynamic_text_buf = C2D_TextBufNew(DYN_TEXT_BUF_SIZE);
 
 	selected_option = 0;
 }
@@ -34,8 +34,8 @@ void menu_init(void) {
 void draw_unselected_option(int i, float x, float y) {
 	C2D_Text optionText;
 
-	C2D_TextBufClear(dynamicTextBuf);
-	C2D_TextParse(&optionText, dynamicTextBuf, options[i]);
+	C2D_TextBufClear(dynamic_text_buf);
+	C2D_TextParse(&optionText, dynamic_text_buf, options[i]);
 	C2D_TextOptimize(&optionText);
 	C2D_DrawText(
 		&optionText, C2D_WithColor,
@@ -70,8 +70,8 @@ void draw_options(void) {
 
 	C2D_Text optionText;
 
-	C2D_TextBufClear(dynamicTextBuf);
-	C2D_TextParse(&optionText, dynamicTextBuf, options[selected_option]);
+	C2D_TextBufClear(dynamic_text_buf);
+	C2D_TextParse(&optionText, dynamic_text_buf, options[selected_option]);
 	C2D_TextOptimize(&optionText);
 	C2D_DrawText(
 		&optionText, C2D_WithColor,
@@ -137,5 +137,5 @@ void menu_update(__attribute__((unused)) unsigned int dt) {
 }
 
 void menu_end(void) {
-	C2D_TextBufDelete(dynamicTextBuf);
+	C2D_TextBufDelete(dynamic_text_buf);
 }
