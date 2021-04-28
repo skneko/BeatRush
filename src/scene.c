@@ -7,8 +7,20 @@
 #include "director.h"
 #include "stdlib.h"
 
-#define DEPTH_OVER_UI                0.5f
-#define DEPTH_PAUSE_MENU             0.9f
+#define DEPTH_BG					 0.0f
+#define DEPTH_BG_BUILDINGS			 0.01f
+#define DEPTH_DECOR_BIRDS			 0.05f
+#define DEPTH_FG_BUILDINGS			 0.08f
+#define DEPTH_ROAD					 0.1f
+#define DEPTH_NOTES					 0.21f
+#define DEPTH_PLAYER				 0.22f
+#define DEPTH_UI_SCORE			     0.7f
+#define DEPTH_UI_COMBO				 0.7f
+#define DEPTH_UI_HEALTH				 0.7f
+#define DEPTH_UI_OVER                0.79f
+#define DEPTH_PAUSE_MENU             0.8f
+#define DEPTH_DEBUG_BASE			 0.9f
+#define DEPTH_DEBUG_RULERS			 0.98f
 
 #define SCORE_LABEL_BUF_SIZE         13
 #define COMBO_LABEL_BUF_SIZE         13
@@ -92,7 +104,7 @@ static void init_sprites(void) {
 	C2D_SpriteFromSheet(debug_player_sprite, char_sprite_sheet, 0);
 	C2D_SpriteSetCenter(debug_player_sprite, .5f, .5f);
 	C2D_SpriteSetPos(debug_player_sprite, HITLINE_LEFT_MARGIN, TOP_SCREEN_HEIGHT - LANE_BOTTOM_MARGIN - LANE_HEIGHT / 2);
-	C2D_SpriteSetDepth(debug_player_sprite, .9f);
+	C2D_SpriteSetDepth(debug_player_sprite, DEPTH_PLAYER);
 	C2D_SpriteScale(debug_player_sprite, 2, 2);
 
 	//------------------------------------------------------------------------------------------------
@@ -101,14 +113,14 @@ static void init_sprites(void) {
 	C2D_SpriteFromSheet(bg_sprite, bg_sprite_sheet, 0);
 	C2D_SpriteSetCenter(bg_sprite, .5f, .5f);
 	C2D_SpriteSetPos(bg_sprite, TOP_SCREEN_WIDTH / 2, TOP_SCREEN_HEIGHT / 2);
-	C2D_SpriteSetDepth(bg_sprite, 0);
+	C2D_SpriteSetDepth(bg_sprite, DEPTH_BG);
 
 	//there are 11 bg buildings to place (1 - 11)
 	for (int i = 1; i < 12; i++) {
 		C2D_Sprite *bg_building_sprite = &bg_sprites[i]; //the sprite for the bg building
 		C2D_SpriteFromSheet(bg_building_sprite, bg_sprite_sheet, 1);
 		C2D_SpriteSetPos(bg_building_sprite, (i - 1) * 40, BG_BUILD_MIN_HEIGHT - (rand() % BG_BUILD_MAX_HEIGHT));
-		C2D_SpriteSetDepth(bg_building_sprite, .1f);
+		C2D_SpriteSetDepth(bg_building_sprite, DEPTH_BG_BUILDINGS);
 	}
 	frame = 0;
 
@@ -118,7 +130,7 @@ static void init_sprites(void) {
 		C2D_Sprite *fg_building_sprite = &bg_sprites[i]; //the sprite for the fg building
 		C2D_SpriteFromSheet(fg_building_sprite, bg_sprite_sheet, 2 + (rand() % 3));
 		C2D_SpriteSetPos(fg_building_sprite, w, FG_BUILD_MIN_HEIGHT - (rand() % FG_BUILD_MAX_HEIGHT));
-		C2D_SpriteSetDepth(fg_building_sprite, .3f);
+		C2D_SpriteSetDepth(fg_building_sprite, DEPTH_FG_BUILDINGS);
 		w += fg_building_sprite->params.pos.w + FG_DISTANCE_BW_BUILDINGS;
 	}
 
@@ -128,7 +140,7 @@ static void init_sprites(void) {
 	C2D_SpriteScale(road, 1, .7f);
 	C2D_SpriteSetCenter(road, .5f, .5f);
 	C2D_SpriteSetPos(road, TOP_SCREEN_WIDTH / 2, 200);
-	C2D_SpriteSetDepth(road, .4f);
+	C2D_SpriteSetDepth(road, DEPTH_ROAD);
 
 	//let's draw a cute lil birdo friend owo
 	C2D_Sprite *birdo = &bg_sprites[30];
@@ -136,14 +148,14 @@ static void init_sprites(void) {
 	C2D_SpriteSetCenter(birdo, .5f, .5f);
 	//C2D_SpriteScale(birdo, 5, 5); //I put this here for debugging, the sprite is crazy small
 	C2D_SpriteSetPos(birdo, 310, 50);
-	C2D_SpriteSetDepth(birdo, .2f);
+	C2D_SpriteSetDepth(birdo, DEPTH_DECOR_BIRDS);
 
 	C2D_Sprite *birdo_2 = &bg_sprites[31];
 	C2D_SpriteFromSheet(birdo_2, bg_sprite_sheet, 6);
 	C2D_SpriteSetCenter(birdo_2, .5f, .5f);
 	//C2D_SpriteScale(birdo, 5, 5); //I put this here for debugging, the sprite is crazy small
 	C2D_SpriteSetPos(birdo_2, 318, 55);
-	C2D_SpriteSetDepth(birdo_2, .2f);
+	C2D_SpriteSetDepth(birdo_2, DEPTH_DECOR_BIRDS);
 	bird_dir = -1;
 
 	//------------------------------------------------------------------------------------------------
@@ -154,7 +166,7 @@ static void init_sprites(void) {
 		C2D_SpriteSetCenter(note_sprite, .5f, .5f);
 		C2D_SpriteSetPos(note_sprite, 0, 0);
 		//C2D_SpriteScale(note_sprite, 1.5f, 1.5f);
-		C2D_SpriteSetDepth(note_sprite, .5f);
+		C2D_SpriteSetDepth(note_sprite, DEPTH_NOTES);
 	}
 }
 
@@ -219,7 +231,7 @@ static NoteDrawingResult draw_note(const Note *const note, int noteId) {
 		//    C2D_PURPLE);
 		C2D_DrawLine(note_x, lane_y - NOTE_RADIUS, C2D_RED,
 					 note_x, lane_y + NOTE_RADIUS, C2D_RED,
-					 1.0f, DEBUG_DEPTH + 1);
+					 3.0f, DEPTH_DEBUG_BASE);
 	}
 
 	return NOTE_DRAWN;
@@ -274,7 +286,7 @@ static void draw_score(void) {
 	//dibujar texto ########################### PUNTUACION ######
 	C2D_DrawText(
 		&scoreLabel, C2D_WithColor | C2D_AtBaseline,
-		290.0f, 25.0f, 0.0f, 0.8f, 0.8f,
+		290.0f, 25.0f, DEPTH_UI_SCORE, 0.8f, 0.8f,
 		C2D_WHITE);
 }
 
@@ -302,7 +314,7 @@ static void draw_combo(void) {
 		//dibujar texto ############################## COMBO ##############
 		C2D_DrawText(
 			&comboLabel, C2D_WithColor | C2D_AtBaseline | C2D_AlignCenter,
-			200.0f, 25.0f, 0.0f, 1.0f, 1.0f,
+			200.0f, 25.0f, DEPTH_UI_COMBO, 1.0f, 1.0f,
 			color);
 	}
 }
@@ -324,7 +336,7 @@ static void draw_health(void) {
 	C2D_TextOptimize(&healthIconArea);
 	C2D_DrawText(
 		&healthIconArea, C2D_WithColor | C2D_AtBaseline | C2D_AlignCenter,
-		130.0f, 230.0f, 0.0f, 1.5f, 1.0f,
+		130.0f, 230.0f, DEPTH_UI_HEALTH, 1.5f, 1.0f,
 		logic_is_invencible() ? C2D_BLUE : C2D_RED);
 }
 
@@ -335,10 +347,10 @@ static void draw_attention_warnings(long long time_until_next) {
 		float top_y = ATTENTION_WARN_MARGIN_Y;
 		float bottom_y = TOP_SCREEN_HEIGHT - ATTENTION_WARN_MARGIN_Y;
 
-		draw_sideways_triangle(left_x, top_y, ATTENTION_WARN_BASE, ATTENTION_WARN_HEIGHT, 1, 1, C2D_RED, DEPTH_OVER_UI);
-		draw_sideways_triangle(right_x, top_y, ATTENTION_WARN_BASE, ATTENTION_WARN_HEIGHT, -1, 1, C2D_RED, DEPTH_OVER_UI);
-		draw_sideways_triangle(left_x, bottom_y, ATTENTION_WARN_BASE, ATTENTION_WARN_HEIGHT, 1, -1, C2D_RED, DEPTH_OVER_UI);
-		draw_sideways_triangle(right_x, bottom_y, ATTENTION_WARN_BASE, ATTENTION_WARN_HEIGHT, -1, -1, C2D_RED, DEPTH_OVER_UI);
+		draw_sideways_triangle(left_x, top_y, ATTENTION_WARN_BASE, ATTENTION_WARN_HEIGHT, 1, 1, C2D_RED, DEPTH_UI_OVER);
+		draw_sideways_triangle(right_x, top_y, ATTENTION_WARN_BASE, ATTENTION_WARN_HEIGHT, -1, 1, C2D_RED, DEPTH_UI_OVER);
+		draw_sideways_triangle(left_x, bottom_y, ATTENTION_WARN_BASE, ATTENTION_WARN_HEIGHT, 1, -1, C2D_RED, DEPTH_UI_OVER);
+		draw_sideways_triangle(right_x, bottom_y, ATTENTION_WARN_BASE, ATTENTION_WARN_HEIGHT, -1, -1, C2D_RED, DEPTH_UI_OVER);
 	}
 }
 
@@ -371,7 +383,7 @@ static void draw_attention_cues(void) {
 			C2D_TextOptimize(&restTimeLabel);
 			C2D_DrawText(
 				&restTimeLabel, C2D_WithColor | C2D_AtBaseline,
-				TOP_SCREEN_CENTER_HOR - 20, TOP_SCREEN_CENTER_VER + 5, DEPTH_OVER_UI, 0.5f, 0.5f,
+				TOP_SCREEN_CENTER_HOR - 20, TOP_SCREEN_CENTER_VER + 5, DEPTH_UI_OVER, 0.5f, 0.5f,
 				C2D_WHITE);
 		}
 	}
@@ -471,7 +483,7 @@ static void draw_debug_song_time(void) {
 	C2D_TextOptimize(&songTimeLabel);
 	C2D_DrawText(
 		&songTimeLabel, C2D_WithColor | C2D_AtBaseline,
-		230.0f, 220.0f, DEBUG_DEPTH, 0.5f, 0.5f,
+		230.0f, 220.0f, DEPTH_DEBUG_BASE, 0.5f, 0.5f,
 		C2D_WHITE);
 }
 
@@ -479,7 +491,7 @@ static void draw_debug_progress_bar(void) {
 	float progress = (float)audioPlaybackPosition() / audioLength();
 	C2D_DrawRectangle(
 		0, TOP_SCREEN_HEIGHT - 3.0f,
-		DEBUG_DEPTH,
+		DEPTH_DEBUG_BASE,
 		TOP_SCREEN_WIDTH * progress, 3.0f,
 		C2D_RED, C2D_RED, C2D_RED, C2D_RED);
 }
@@ -489,44 +501,44 @@ static void draw_debug_rulers(void) {
 	C2D_DrawLine(
 		0, LANE_TOP_MARGIN, C2D_GREEN,
 		TOP_SCREEN_WIDTH, LANE_TOP_MARGIN, C2D_GREEN,
-		1.0f, DEBUG_DEPTH);
+		1.0f, DEPTH_DEBUG_RULERS);
 	C2D_DrawLine(
 		0, LANE_TOP_MARGIN + LANE_HEIGHT, C2D_GREEN,
 		TOP_SCREEN_WIDTH, LANE_TOP_MARGIN + LANE_HEIGHT, C2D_GREEN,
-		1.0f, DEBUG_DEPTH);
+		1.0f, DEPTH_DEBUG_RULERS);
 
 	// bottom lane
 	C2D_DrawLine(
 		0, TOP_SCREEN_HEIGHT - LANE_BOTTOM_MARGIN, C2D_GREEN,
 		TOP_SCREEN_WIDTH, TOP_SCREEN_HEIGHT - LANE_BOTTOM_MARGIN, C2D_GREEN,
-		1.0f, DEBUG_DEPTH);
+		1.0f, DEPTH_DEBUG_RULERS);
 	C2D_DrawLine(
 		0, TOP_SCREEN_HEIGHT - LANE_BOTTOM_MARGIN - LANE_HEIGHT, C2D_GREEN,
 		TOP_SCREEN_WIDTH, TOP_SCREEN_HEIGHT - LANE_BOTTOM_MARGIN - LANE_HEIGHT, C2D_GREEN,
-		1.0f, DEBUG_DEPTH);
+		1.0f, DEPTH_DEBUG_RULERS);
 
 	// hitline
 	C2D_DrawLine(
 		HITLINE_LEFT_MARGIN, 0.0f, C2D_WHITE,
 		HITLINE_LEFT_MARGIN, TOP_SCREEN_HEIGHT, C2D_WHITE,
-		1.0f, DEBUG_DEPTH);
+		1.0f, DEPTH_DEBUG_RULERS);
 
 	// hitpoints
 	C2D_DrawLine(
 		HITLINE_LEFT_MARGIN - 5.0f, LANE_TOP_MARGIN + LANE_HEIGHT / 2, C2D_GREEN,
 		HITLINE_LEFT_MARGIN + 5.0f, LANE_TOP_MARGIN + LANE_HEIGHT / 2, C2D_GREEN,
-		3.0f, DEBUG_DEPTH);
+		3.0f, DEPTH_DEBUG_RULERS);
 	C2D_DrawLine(
 		HITLINE_LEFT_MARGIN - 5.0f, TOP_SCREEN_HEIGHT - LANE_BOTTOM_MARGIN - LANE_HEIGHT / 2, C2D_GREEN,
 		HITLINE_LEFT_MARGIN + 5.0f, TOP_SCREEN_HEIGHT - LANE_BOTTOM_MARGIN - LANE_HEIGHT / 2, C2D_GREEN,
-		3.0f, DEBUG_DEPTH);
+		3.0f, DEPTH_DEBUG_RULERS);
 }
 
 static void draw_debug_keypress_hint(bool top_lane) {
 	float lane_y = (top_lane ? LANE_TOP_MARGIN : TOP_SCREEN_HEIGHT - LANE_BOTTOM_MARGIN - LANE_HEIGHT) + LANE_HEIGHT / 2;
 
 	C2D_DrawCircleSolid(
-		HITLINE_LEFT_MARGIN, lane_y, 0.0f, NOTE_RADIUS / 2,
+		HITLINE_LEFT_MARGIN, lane_y, DEPTH_DEBUG_BASE, NOTE_RADIUS / 2,
 		C2D_ORANGE);
 }
 

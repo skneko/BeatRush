@@ -18,8 +18,6 @@
 #define NOTE_MARGIN             5
 #define NOTE_RADIUS             (LANE_HEIGHT / 2 - NOTE_MARGIN)
 
-#define DEBUG_DEPTH             1
-
 #define DPAD_ANY                (KEY_CPAD_RIGHT | KEY_CPAD_LEFT | KEY_CPAD_UP | KEY_CPAD_DOWN)
 
 #define C2D_WHITE               C2D_Color32(0xFF, 0xFF, 0xFF, 0xFF)
