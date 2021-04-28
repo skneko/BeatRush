@@ -7,14 +7,8 @@
 #include "director.h"
 #include "stdlib.h"
 
-static Note *next_note_to_draw;
-static unsigned int remaining_notes_to_draw;
-static float speed;
-
-static bool in_rest;
-
-#define OVER_UI_DEPTH                0.5f
-#define PAUSE_MENU_DEPTH             0.9f
+#define DEPTH_OVER_UI                0.5f
+#define DEPTH_PAUSE_MENU             0.9f
 
 #define SCORE_LABEL_BUF_SIZE         13
 #define COMBO_LABEL_BUF_SIZE         13
@@ -38,34 +32,133 @@ static bool in_rest;
 #define ATTENTION_WARN_PERIOD        210
 #define ATTENTION_WARN_VISIBLE       100
 
-//SPRITES
+// *** SPRITES ***
 #define MAX_CHAR_SPRITES             1 //SUGGESTIVE     ###- NOT FINAL -###
 #define MAX_NOTE_SPRITES             50 //SUGGESTIVE     ###- NOT FINAL -###
 #define MAX_BG_SPRITES               35 //SUGGESTIVE     ###- NOT FINAL -###
+
+//bg_buildings
+#define BG_BUILDINGS_SPEED           -1
+#define BG_BUILD_MIN_HEIGHT          160 //ABSOLUTE
+#define BG_BUILD_MAX_HEIGHT          110 //RELATIVE
+
+//fg_buildings
+#define FG_BUILDINGS_SPEED           -1
+#define FG_BUILD_MIN_HEIGHT          100 //ABSOLUTE
+#define FG_BUILD_MAX_HEIGHT          100 //RELATIVE
+#define FG_DISTANCE_BW_BUILDINGS     10 //10 base, more if random
+// ***
+
+static Note *next_note_to_draw;
+static unsigned int remaining_notes_to_draw;
+static float speed;
+
+static bool in_rest;
+
 C2D_Sprite char_sprites[MAX_CHAR_SPRITES];
 C2D_Sprite note_sprites[MAX_NOTE_SPRITES];
 C2D_Sprite bg_sprites[MAX_BG_SPRITES];
 C2D_SpriteSheet char_sprite_sheet;
 C2D_SpriteSheet note_sprite_sheet;
 C2D_SpriteSheet bg_sprite_sheet;
-//--------------
+
 int frame;
-//--------------
-//bg_buildings
-#define BG_BUILDINGS_SPEED          -1
-#define BG_BUILD_MIN_HEIGHT         160 //ABSOLUTE
-#define BG_BUILD_MAX_HEIGHT         110 //RELATIVE
-//fg_buildings
-#define FG_BUILDINGS_SPEED          -1
-#define FG_BUILD_MIN_HEIGHT         100 //ABSOLUTE
-#define FG_BUILD_MAX_HEIGHT         100 //RELATIVE
-#define FG_DISTANCE_BW_BUILDINGS    10 //10 base, more if random
+
 int w; //since all fg buildings have different widths I need a variable to see where to put the next sprite
 int bird_dir;
 
 static C2D_TextBuf dynamic_text_buf;
 
-void scene_init() {
+static C2D_SpriteSheet load_sprite_sheet(const char *path) {
+	C2D_SpriteSheet sheet = C2D_SpriteSheetLoad(path);
+
+	if (!sheet) {
+		printf("Failed to load sprite sheet: %s", path);
+		svcBreak(USERBREAK_PANIC);
+	}
+
+	return sheet;
+}
+
+static void init_sprites(void) {
+//load sheets from gfx
+	char_sprite_sheet = load_sprite_sheet("romfs:/gfx/run_char_anim.t3x"); //char
+	note_sprite_sheet = load_sprite_sheet("romfs:/gfx/note.t3x"); //note  ### TO DRAW ###
+	bg_sprite_sheet = load_sprite_sheet("romfs:/gfx/bg.t3x"); //bg        ### TO DRAW ###
+
+	//------------------------------------------------------------------------------------------------
+	//init char sprite to default state
+	C2D_Sprite *debug_player_sprite = &char_sprites[0]; //the sprite for the bg skybox, give or take you know what I mean
+	C2D_SpriteFromSheet(debug_player_sprite, char_sprite_sheet, 0);
+	C2D_SpriteSetCenter(debug_player_sprite, .5f, .5f);
+	C2D_SpriteSetPos(debug_player_sprite, HITLINE_LEFT_MARGIN, TOP_SCREEN_HEIGHT - LANE_BOTTOM_MARGIN - LANE_HEIGHT / 2);
+	C2D_SpriteSetDepth(debug_player_sprite, .9f);
+	C2D_SpriteScale(debug_player_sprite, 2, 2);
+
+	//------------------------------------------------------------------------------------------------
+	//init bg sprite to default state (lmao OK)
+	C2D_Sprite *bg_sprite = &bg_sprites[0]; //the sprite for the bg skybox, give or take you know what I mean
+	C2D_SpriteFromSheet(bg_sprite, bg_sprite_sheet, 0);
+	C2D_SpriteSetCenter(bg_sprite, .5f, .5f);
+	C2D_SpriteSetPos(bg_sprite, TOP_SCREEN_WIDTH / 2, TOP_SCREEN_HEIGHT / 2);
+	C2D_SpriteSetDepth(bg_sprite, 0);
+
+	//there are 11 bg buildings to place (1 - 11)
+	for (int i = 1; i < 12; i++) {
+		C2D_Sprite *bg_building_sprite = &bg_sprites[i]; //the sprite for the bg building
+		C2D_SpriteFromSheet(bg_building_sprite, bg_sprite_sheet, 1);
+		C2D_SpriteSetPos(bg_building_sprite, (i - 1) * 40, BG_BUILD_MIN_HEIGHT - (rand() % BG_BUILD_MAX_HEIGHT));
+		C2D_SpriteSetDepth(bg_building_sprite, .1f);
+	}
+	frame = 0;
+
+	//there are 17 fg buildings to place (maximum)
+	w = 0;
+	for (int i = 12; i < 29; i++) {
+		C2D_Sprite *fg_building_sprite = &bg_sprites[i]; //the sprite for the fg building
+		C2D_SpriteFromSheet(fg_building_sprite, bg_sprite_sheet, 2 + (rand() % 3));
+		C2D_SpriteSetPos(fg_building_sprite, w, FG_BUILD_MIN_HEIGHT - (rand() % FG_BUILD_MAX_HEIGHT));
+		C2D_SpriteSetDepth(fg_building_sprite, .3f);
+		w += fg_building_sprite->params.pos.w + FG_DISTANCE_BW_BUILDINGS;
+	}
+
+	//road TEMPORARY!!!!
+	C2D_Sprite *road = &bg_sprites[29];
+	C2D_SpriteFromSheet(road, bg_sprite_sheet, 5);
+	C2D_SpriteScale(road, 1, .7f);
+	C2D_SpriteSetCenter(road, .5f, .5f);
+	C2D_SpriteSetPos(road, TOP_SCREEN_WIDTH / 2, 200);
+	C2D_SpriteSetDepth(road, .4f);
+
+	//let's draw a cute lil birdo friend owo
+	C2D_Sprite *birdo = &bg_sprites[30];
+	C2D_SpriteFromSheet(birdo, bg_sprite_sheet, 6);
+	C2D_SpriteSetCenter(birdo, .5f, .5f);
+	//C2D_SpriteScale(birdo, 5, 5); //I put this here for debugging, the sprite is crazy small
+	C2D_SpriteSetPos(birdo, 310, 50);
+	C2D_SpriteSetDepth(birdo, .2f);
+
+	C2D_Sprite *birdo_2 = &bg_sprites[31];
+	C2D_SpriteFromSheet(birdo_2, bg_sprite_sheet, 6);
+	C2D_SpriteSetCenter(birdo_2, .5f, .5f);
+	//C2D_SpriteScale(birdo, 5, 5); //I put this here for debugging, the sprite is crazy small
+	C2D_SpriteSetPos(birdo_2, 318, 55);
+	C2D_SpriteSetDepth(birdo_2, .2f);
+	bird_dir = -1;
+
+	//------------------------------------------------------------------------------------------------
+	//init note sprites someway somehow yipee
+	for (int i = 0; i < MAX_NOTE_SPRITES; i++) {
+		C2D_Sprite *note_sprite = &note_sprites[i]; //initialize the note sprites
+		C2D_SpriteFromSheet(note_sprite, note_sprite_sheet, 0);
+		C2D_SpriteSetCenter(note_sprite, .5f, .5f);
+		C2D_SpriteSetPos(note_sprite, 0, 0);
+		//C2D_SpriteScale(note_sprite, 1.5f, 1.5f);
+		C2D_SpriteSetDepth(note_sprite, .5f);
+	}
+}
+
+void scene_init(void) {
 	director_set_audio_dt(true);
 	logic_init();
 
@@ -77,92 +170,7 @@ void scene_init() {
 
 	dynamic_text_buf = C2D_TextBufNew(DYN_TEXT_BUF_SIZE);
 
-	//############ SPRITE LOADER ##################
-
-	//load sheets from gfx
-	char_sprite_sheet = C2D_SpriteSheetLoad("romfs:/gfx/run_char_anim.t3x"); //char
-	if (!char_sprite_sheet) {
-		svcBreak(USERBREAK_PANIC);
-	}
-	note_sprite_sheet = C2D_SpriteSheetLoad("romfs:/gfx/note.t3x"); //note  ### TO DRAW ###
-	if (!note_sprite_sheet) {
-		svcBreak(USERBREAK_PANIC);
-	}
-	bg_sprite_sheet = C2D_SpriteSheetLoad("romfs:/gfx/bg.t3x"); //bg        ### TO DRAW ###
-	if (!bg_sprite_sheet) {
-		svcBreak(USERBREAK_PANIC);
-	}
-
-	//------------------------------------------------------------------------------------------------
-	//init char sprite to default state
-	C2D_Sprite* debug_player_sprite = &char_sprites[0]; //the sprite for the bg skybox, give or take you know what I mean
-	C2D_SpriteFromSheet(debug_player_sprite, char_sprite_sheet, 0);
-	C2D_SpriteSetCenter(debug_player_sprite, .5f, .5f);
-	C2D_SpriteSetPos(debug_player_sprite, HITLINE_LEFT_MARGIN, TOP_SCREEN_HEIGHT - LANE_BOTTOM_MARGIN - LANE_HEIGHT / 2);
-	C2D_SpriteSetDepth(debug_player_sprite, .9f);
-	C2D_SpriteScale(debug_player_sprite, 2, 2);
-
-	//------------------------------------------------------------------------------------------------
-	//init bg sprite to default state (lmao OK)
-	C2D_Sprite* bg_sprite = &bg_sprites[0]; //the sprite for the bg skybox, give or take you know what I mean
-	C2D_SpriteFromSheet(bg_sprite, bg_sprite_sheet, 0);
-	C2D_SpriteSetCenter(bg_sprite, .5f, .5f);
-	C2D_SpriteSetPos(bg_sprite, TOP_SCREEN_WIDTH / 2, TOP_SCREEN_HEIGHT / 2);
-	C2D_SpriteSetDepth(bg_sprite, 0);
-
-	//there are 11 bg buildings to place (1 - 11)
-	for (int i = 1; i < 12; i++) {
-		C2D_Sprite* bg_building_sprite = &bg_sprites[i]; //the sprite for the bg building
-		C2D_SpriteFromSheet(bg_building_sprite, bg_sprite_sheet, 1);
-		C2D_SpriteSetPos(bg_building_sprite, (i - 1) * 40, BG_BUILD_MIN_HEIGHT - (rand() % BG_BUILD_MAX_HEIGHT));
-		C2D_SpriteSetDepth(bg_building_sprite, .1f);
-	}
-	frame = 0;
-
-	//there are 17 fg buildings to place (maximum)
-	w = 0;
-	for (int i = 12; i < 29; i++) {
-		C2D_Sprite* fg_building_sprite = &bg_sprites[i]; //the sprite for the fg building
-		C2D_SpriteFromSheet(fg_building_sprite, bg_sprite_sheet, 2 + (rand() % 3));
-		C2D_SpriteSetPos(fg_building_sprite, w, FG_BUILD_MIN_HEIGHT - (rand() % FG_BUILD_MAX_HEIGHT));
-		C2D_SpriteSetDepth(fg_building_sprite, .3f);
-		w += fg_building_sprite->params.pos.w + FG_DISTANCE_BW_BUILDINGS;
-	}
-
-	//road TEMPORARY!!!!
-	C2D_Sprite* road = &bg_sprites[29];
-	C2D_SpriteFromSheet(road, bg_sprite_sheet, 5);
-	C2D_SpriteScale(road, 1, .7f);
-	C2D_SpriteSetCenter(road, .5f, .5f);
-	C2D_SpriteSetPos(road, TOP_SCREEN_WIDTH / 2, 200);
-	C2D_SpriteSetDepth(road, .4f);
-
-	//let's draw a cute lil birdo friend owo
-	C2D_Sprite* birdo = &bg_sprites[30];
-	C2D_SpriteFromSheet(birdo, bg_sprite_sheet, 6);
-	C2D_SpriteSetCenter(birdo, .5f, .5f);
-	//C2D_SpriteScale(birdo, 5, 5); //I put this here for debugging, the sprite is crazy small
-	C2D_SpriteSetPos(birdo, 310, 50);
-	C2D_SpriteSetDepth(birdo, .2f);
-
-	C2D_Sprite* birdo_2 = &bg_sprites[31];
-	C2D_SpriteFromSheet(birdo_2, bg_sprite_sheet, 6);
-	C2D_SpriteSetCenter(birdo_2, .5f, .5f);
-	//C2D_SpriteScale(birdo, 5, 5); //I put this here for debugging, the sprite is crazy small
-	C2D_SpriteSetPos(birdo_2, 318, 55);
-	C2D_SpriteSetDepth(birdo_2, .2f);
-	bird_dir = -1;
-
-	//------------------------------------------------------------------------------------------------
-	//init note sprites someway somehow yipee
-	for (int i = 0; i < MAX_NOTE_SPRITES; i++) {
-		C2D_Sprite* note_sprite = &note_sprites[i]; //initialize the note sprites
-		C2D_SpriteFromSheet(note_sprite, note_sprite_sheet, 0);
-		C2D_SpriteSetCenter(note_sprite, .5f, .5f);
-		C2D_SpriteSetPos(note_sprite, 0, 0);
-		//C2D_SpriteScale(note_sprite, 1.5f, 1.5f);
-		C2D_SpriteSetDepth(note_sprite, .5f);
-	}
+	init_sprites();
 
 	audioPlay();
 }
@@ -202,7 +210,7 @@ static NoteDrawingResult draw_note(const Note *const note, int noteId) {
 
 	if (!note->hidden) {
 		// dibujar nota SUSTITUIR POR SPRITE
-		C2D_Sprite* note_sprite = &note_sprites[noteId];
+		C2D_Sprite *note_sprite = &note_sprites[noteId];
 		C2D_SpriteSetPos(note_sprite, floor(note_x), floor(lane_y));
 		note_sprite->image = C2D_SpriteSheetGetImage(note_sprite_sheet, (frame % 24 < 12) ? offset : offset + 1); //animate
 		C2D_DrawSprite(note_sprite);
@@ -327,10 +335,10 @@ static void draw_attention_warnings(long long time_until_next) {
 		float top_y = ATTENTION_WARN_MARGIN_Y;
 		float bottom_y = TOP_SCREEN_HEIGHT - ATTENTION_WARN_MARGIN_Y;
 
-		draw_sideways_triangle(left_x, top_y, ATTENTION_WARN_BASE, ATTENTION_WARN_HEIGHT, 1, 1, C2D_RED, OVER_UI_DEPTH);
-		draw_sideways_triangle(right_x, top_y, ATTENTION_WARN_BASE, ATTENTION_WARN_HEIGHT, -1, 1, C2D_RED, OVER_UI_DEPTH);
-		draw_sideways_triangle(left_x, bottom_y, ATTENTION_WARN_BASE, ATTENTION_WARN_HEIGHT, 1, -1, C2D_RED, OVER_UI_DEPTH);
-		draw_sideways_triangle(right_x, bottom_y, ATTENTION_WARN_BASE, ATTENTION_WARN_HEIGHT, -1, -1, C2D_RED, OVER_UI_DEPTH);
+		draw_sideways_triangle(left_x, top_y, ATTENTION_WARN_BASE, ATTENTION_WARN_HEIGHT, 1, 1, C2D_RED, DEPTH_OVER_UI);
+		draw_sideways_triangle(right_x, top_y, ATTENTION_WARN_BASE, ATTENTION_WARN_HEIGHT, -1, 1, C2D_RED, DEPTH_OVER_UI);
+		draw_sideways_triangle(left_x, bottom_y, ATTENTION_WARN_BASE, ATTENTION_WARN_HEIGHT, 1, -1, C2D_RED, DEPTH_OVER_UI);
+		draw_sideways_triangle(right_x, bottom_y, ATTENTION_WARN_BASE, ATTENTION_WARN_HEIGHT, -1, -1, C2D_RED, DEPTH_OVER_UI);
 	}
 }
 
@@ -363,7 +371,7 @@ static void draw_attention_cues(void) {
 			C2D_TextOptimize(&restTimeLabel);
 			C2D_DrawText(
 				&restTimeLabel, C2D_WithColor | C2D_AtBaseline,
-				TOP_SCREEN_CENTER_HOR - 20, TOP_SCREEN_CENTER_VER + 5, OVER_UI_DEPTH, 0.5f, 0.5f,
+				TOP_SCREEN_CENTER_HOR - 20, TOP_SCREEN_CENTER_VER + 5, DEPTH_OVER_UI, 0.5f, 0.5f,
 				C2D_WHITE);
 		}
 	}
@@ -372,18 +380,18 @@ static void draw_attention_cues(void) {
 static void draw_player_sprite(void){
 	//SOMETHING HERE
 	//player debug sprite
-	C2D_Sprite* debug_player_sprite = &char_sprites[0];
+	C2D_Sprite *debug_player_sprite = &char_sprites[0];
 	C2D_DrawSprite(debug_player_sprite);
 }
 
 static void draw_bg_sprites(void){
 	//SOMETHING HERE
 	//skybox
-	C2D_Sprite* bg_sprite = &bg_sprites[0];
+	C2D_Sprite *bg_sprite = &bg_sprites[0];
 	C2D_DrawSprite(bg_sprite);
 	//bg building
 	for (int i = 1; i < 12; i++) {
-		C2D_Sprite* bg_building_sprite = &bg_sprites[i];
+		C2D_Sprite *bg_building_sprite = &bg_sprites[i];
 		//if it's off screen we move it to the front
 		if (bg_building_sprite->params.pos.x <= -40) {
 			C2D_SpriteSetPos(bg_building_sprite,
@@ -398,7 +406,7 @@ static void draw_bg_sprites(void){
 	}
 	//fg building
 	for (int i = 12; i < 29; i++) {
-		C2D_Sprite* fg_building_sprite = &bg_sprites[i];
+		C2D_Sprite *fg_building_sprite = &bg_sprites[i];
 		if (fg_building_sprite->params.pos.x <= -fg_building_sprite->params.pos.w) {
 			C2D_SpriteSetPos(fg_building_sprite,
 							 w,
@@ -414,10 +422,10 @@ static void draw_bg_sprites(void){
 		w += FG_BUILDINGS_SPEED;
 	}
 	//road TEMPORARY
-	C2D_Sprite* road = &bg_sprites[29];
+	C2D_Sprite *road = &bg_sprites[29];
 	C2D_DrawSprite(road);
 	//birdo
-	C2D_Sprite* birdo = &bg_sprites[30];
+	C2D_Sprite *birdo = &bg_sprites[30];
 	if (frame % 40 == 0) {
 		C2D_SpriteMove(birdo, -1, 0);               //movement in x
 	}
@@ -431,7 +439,7 @@ static void draw_bg_sprites(void){
 	}
 	C2D_DrawSprite(birdo);
 
-	C2D_Sprite* birdo_2 = &bg_sprites[31];
+	C2D_Sprite *birdo_2 = &bg_sprites[31];
 	if (frame % 40 == 5) {
 		C2D_SpriteMove(birdo_2, -1, 0);               //movement in x
 	}
@@ -552,7 +560,7 @@ void draw_pause(void) {
 	C2D_TextOptimize(&pauseLabel);
 	C2D_DrawText(
 		&pauseLabel, C2D_WithColor | C2D_AlignCenter,
-		TOP_SCREEN_CENTER_HOR, TOP_SCREEN_CENTER_VER - NOTE_RADIUS - 5, PAUSE_MENU_DEPTH, 1.5f, 1.5f,
+		TOP_SCREEN_CENTER_HOR, TOP_SCREEN_CENTER_VER - NOTE_RADIUS - 5, DEPTH_PAUSE_MENU, 1.5f, 1.5f,
 		C2D_WHITE);
 }
 
@@ -566,7 +574,7 @@ void draw_failure(void) {
 	C2D_TextOptimize(&failureLabel);
 	C2D_DrawText(
 		&failureLabel, C2D_WithColor | C2D_AlignCenter,
-		TOP_SCREEN_CENTER_HOR, TOP_SCREEN_CENTER_VER - NOTE_RADIUS - 5, PAUSE_MENU_DEPTH, 1.5f, 1.5f,
+		TOP_SCREEN_CENTER_HOR, TOP_SCREEN_CENTER_VER - NOTE_RADIUS - 5, DEPTH_PAUSE_MENU, 1.5f, 1.5f,
 		C2D_RED);
 }
 
