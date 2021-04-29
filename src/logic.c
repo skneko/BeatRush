@@ -52,6 +52,8 @@ static unsigned int health_regen_time;
 static unsigned int time_to_health_regen;
 static bool has_failed;
 
+static Lane target_lane;
+
 static void increase_score(int increment) {
 	score += increment * combo_multiplier + combo / 10;
 }
@@ -141,6 +143,8 @@ static void check_note(void) {
 }
 
 static void action_hit(void) {
+	target_lane = LANE_BOTTOM;
+
 	if (!next_note_to_hit->topLane) {
 		check_note();
 	} else {
@@ -149,6 +153,8 @@ static void action_hit(void) {
 }
 
 static void action_jump(void) {
+	target_lane = LANE_TOP;
+
 	if (next_note_to_hit->topLane) {
 		check_note();
 	} else {
@@ -201,6 +207,8 @@ void logic_init() {
 	health_regen_time = (unsigned int)(beatmap->approach_time * HEALTH_REGEN_TIME_MULT);
 	time_to_health_regen = 0;
 	has_failed = false;
+
+	target_lane = LANE_BOTTOM;
 }
 
 void logic_end(void) {
@@ -263,4 +271,8 @@ bool logic_is_invencible(void) {
 
 bool logic_has_failed(void) {
 	return has_failed;
+}
+
+Lane logic_target_lane(void) {
+	return target_lane;
 }
