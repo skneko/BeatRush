@@ -67,17 +67,17 @@ static float speed;
 
 static bool in_rest;
 
-C2D_Sprite char_sprites[MAX_CHAR_SPRITES];
-C2D_Sprite note_sprites[MAX_NOTE_SPRITES];
-C2D_Sprite bg_sprites[MAX_BG_SPRITES];
-C2D_SpriteSheet char_sprite_sheet;
-C2D_SpriteSheet note_sprite_sheet;
-C2D_SpriteSheet bg_sprite_sheet;
+static C2D_Sprite char_sprites[MAX_CHAR_SPRITES];
+static C2D_Sprite note_sprites[MAX_NOTE_SPRITES];
+static C2D_Sprite bg_sprites[MAX_BG_SPRITES];
+static C2D_SpriteSheet char_sprite_sheet;
+static C2D_SpriteSheet note_sprite_sheet;
+static C2D_SpriteSheet bg_sprite_sheet;
 
-int frame;
+static int frame;
 
-int w; //since all fg buildings have different widths I need a variable to see where to put the next sprite
-int bird_dir;
+static int w; //since all fg buildings have different widths I need a variable to see where to put the next sprite
+static int bird_dir;
 
 static C2D_TextBuf dynamic_text_buf;
 
@@ -562,7 +562,7 @@ static void draw_debug_overlay(void) {
 	draw_debug_keypress_hints();
 }
 
-void draw_pause(void) {
+static void draw_pause(void) {
 	C2D_Text pauseLabel;
 	char buf[PAUSE_LABEL_BUF_SIZE];
 
@@ -576,7 +576,7 @@ void draw_pause(void) {
 		C2D_WHITE);
 }
 
-void draw_failure(void) {
+static void draw_failure(void) {
 	C2D_Text failureLabel;
 	char buf[10];
 
