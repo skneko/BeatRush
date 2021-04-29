@@ -7,20 +7,20 @@
 #include "director.h"
 #include "stdlib.h"
 
-#define DEPTH_BG					 0.0f
-#define DEPTH_BG_BUILDINGS			 0.01f
-#define DEPTH_DECOR_BIRDS			 0.05f
-#define DEPTH_FG_BUILDINGS			 0.08f
-#define DEPTH_ROAD					 0.1f
-#define DEPTH_NOTES					 0.21f
-#define DEPTH_PLAYER				 0.22f
-#define DEPTH_UI_SCORE			     0.7f
-#define DEPTH_UI_COMBO				 0.7f
-#define DEPTH_UI_HEALTH				 0.7f
-#define DEPTH_UI_OVER                0.79f
-#define DEPTH_PAUSE_MENU             0.8f
-#define DEPTH_DEBUG_BASE			 0.9f
-#define DEPTH_DEBUG_RULERS			 0.98f
+#define DEPTH_BG					 0.0
+#define DEPTH_BG_BUILDINGS			 0.01
+#define DEPTH_DECOR_BIRDS			 0.05
+#define DEPTH_FG_BUILDINGS			 0.08
+#define DEPTH_ROAD					 0.1
+#define DEPTH_NOTES					 0.21
+#define DEPTH_PLAYER				 0.22
+#define DEPTH_UI_SCORE			     0.7
+#define DEPTH_UI_COMBO				 0.7
+#define DEPTH_UI_HEALTH				 0.7
+#define DEPTH_UI_OVER                0.79
+#define DEPTH_PAUSE_MENU             0.8
+#define DEPTH_DEBUG_BASE			 0.9
+#define DEPTH_DEBUG_RULERS			 0.98
 
 #define SCORE_LABEL_BUF_SIZE         13
 #define COMBO_LABEL_BUF_SIZE         13
