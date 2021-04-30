@@ -122,6 +122,7 @@ void menu_update(__attribute__((unused)) unsigned int dt) {
 	if (k_down & KEY_A) {
 		beatmap = select_beatmap();             // FIXME
 		director_change_state(RUNNING_BEATMAP);
+		return;
 	}
 
 	if ((k_down & KEY_UP) | (k_down & KEY_CSTICK_UP)) {
