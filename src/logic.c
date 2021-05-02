@@ -5,6 +5,7 @@
 #include "common.h"
 #include "audio.h"
 #include "director.h"
+#include "player.h"
 
 #define HIT_WINDOW_PERFECT        43
 #define HIT_WINDOW_GOOD           91
@@ -52,8 +53,6 @@ static unsigned int health_regen_time;
 static unsigned int time_to_health_regen;
 static bool has_failed;
 
-static Lane target_lane;
-
 static void increase_score(int increment) {
 	score += increment * combo_multiplier + combo / 10;
 }
@@ -87,9 +86,9 @@ static void take_damage(void) {
 	}
 }
 
-static void check_note(void) {
+static bool check_note(void) {
 	if (remaining_notes_to_hit <= 0) {
-		return;
+		return false;
 	}
 
 	unsigned long actual_position = audioPlaybackPosition();
@@ -139,11 +138,18 @@ static void check_note(void) {
 		hits_miss++;
 	} else {
 		printf("ignored.\n");
+		return false;
 	}
+
+	return true;
 }
 
-static void action_hit(void) {
-	target_lane = LANE_BOTTOM;
+static void action_down(void) {
+	if (player_current_lane() == LANE_BOTTOM) {
+		player_hit();
+	} else {
+		player_quick_fall();
+	}
 
 	if (!next_note_to_hit->topLane) {
 		check_note();
@@ -152,11 +158,17 @@ static void action_hit(void) {
 	}
 }
 
-static void action_jump(void) {
-	target_lane = LANE_TOP;
+static void action_up(void) {
+	if (player_current_lane() == LANE_TOP) {
+		player_hit();
+	}
 
 	if (next_note_to_hit->topLane) {
-		check_note();
+		if (check_note()) {
+			player_quick_jump();
+		} else {
+			player_jump();
+		}
 	} else {
 		printf("HIT wrong lane.\n");
 	}
@@ -207,14 +219,14 @@ void logic_init() {
 	health_regen_time = (unsigned int)(beatmap->approach_time * HEALTH_REGEN_TIME_MULT);
 	time_to_health_regen = 0;
 	has_failed = false;
-
-	target_lane = LANE_BOTTOM;
 }
 
 void logic_end(void) {
 }
 
 void logic_update(unsigned int dt) {
+	player_update();
+
 	u32 k_down = hidKeysDown();
 
 	/* Pause on START */
@@ -242,10 +254,10 @@ void logic_update(unsigned int dt) {
 	}
 
 	if (k_down & KEY_A || k_down & KEY_B) {
-		action_hit();
+		action_down();
 	}
 	if (k_down & KEY_X || k_down & KEY_Y) {
-		action_jump();
+		action_up();
 	}
 }
 
@@ -271,8 +283,4 @@ bool logic_is_invencible(void) {
 
 bool logic_has_failed(void) {
 	return has_failed;
-}
-
-Lane logic_target_lane(void) {
-	return target_lane;
 }

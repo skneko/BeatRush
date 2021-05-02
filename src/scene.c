@@ -6,6 +6,7 @@
 #include "draw.h"
 #include "director.h"
 #include "stdlib.h"
+#include "player.h"
 
 #define DEPTH_BG					 0.0
 #define DEPTH_BG_BUILDINGS			 0.01
@@ -96,15 +97,6 @@ static C2D_SpriteSheet load_sprite_sheet(const char *path) {
 	return sheet;
 }
 
-static void set_calculated_player_pos(C2D_Sprite *player_sprite) {
-	const float bottom_y = TOP_SCREEN_HEIGHT - LANE_BOTTOM_MARGIN - LANE_HEIGHT / 2;
-	const float top_y = LANE_TOP_MARGIN + LANE_HEIGHT / 2;
-
-	float dy = (bottom_y - top_y) * player_lerp_position;
-
-	C2D_SpriteSetPos(player_sprite, HITLINE_LEFT_MARGIN, top_y + dy);
-}
-
 static void init_sprites(void) {
 //load sheets from gfx
 	char_sprite_sheet = load_sprite_sheet("romfs:/gfx/run_char_anim.t3x"); //char
@@ -116,7 +108,6 @@ static void init_sprites(void) {
 	C2D_Sprite *player_sprite = &char_sprites[0]; //the sprite for the bg skybox, give or take you know what I mean
 	C2D_SpriteFromSheet(player_sprite, char_sprite_sheet, 0);
 	C2D_SpriteSetCenter(player_sprite, .5f, .5f);
-	set_calculated_player_pos(player_sprite);
 	C2D_SpriteSetDepth(player_sprite, DEPTH_PLAYER);
 	C2D_SpriteScale(player_sprite, 2, 2);
 
@@ -403,23 +394,6 @@ static void draw_attention_cues(void) {
 	}
 }
 
-static void draw_player_sprite(void){
-	Lane target_lane = logic_target_lane();
-
-	if (target_lane == LANE_BOTTOM && player_lerp_position < 1) {
-		player_lerp_position += PLAYER_JUMP_SPEED;
-	} else if (target_lane == LANE_TOP && player_lerp_position > 0) {
-		player_lerp_position -= PLAYER_JUMP_SPEED;
-	}
-	player_lerp_position = C2D_Clamp(player_lerp_position, 0, 1);
-
-	//SOMETHING HERE
-	//player debug sprite
-	C2D_Sprite *player_sprite = &char_sprites[0];
-	set_calculated_player_pos(player_sprite);
-	C2D_DrawSprite(player_sprite);
-}
-
 static void draw_bg_sprites(void){
 	//SOMETHING HERE
 	//skybox
@@ -621,7 +595,7 @@ void scene_draw(void) {
 		draw_pause();
 	}
 
-	draw_player_sprite();
+	player_draw(char_sprites);
 	draw_bg_sprites();
 	draw_notes();
 
