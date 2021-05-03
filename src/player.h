@@ -25,5 +25,5 @@ void player_quick_fall(void);
 void player_init(void);
 void player_end(void);
 
-void player_update(void);
+void player_update(unsigned int dt);
 void player_draw(C2D_Sprite char_sprites[]);

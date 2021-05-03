@@ -3,13 +3,17 @@
 #define HIT_ANIMATION_COUNT     2
 #define QUICK_JUMP_DISTANCE     0.8
 #define QUICK_FALL_DISTANCE     0.8
-#define JUMP_SPEED              0.3
-#define FALL_SPEED              0.3
+#define JUMP_SPEED              0.35
+#define FALL_SPEED              0.2
+
+#define FLOAT_TIME              650
 
 static PlayerState state;
 static Lane current_lane;
 
 static float player_position;
+
+static int remaining_float_time;
 
 static int next_hit_animation;
 
@@ -47,6 +51,8 @@ static inline void do_float(void) {
     state = PLAYER_STATE_FLOATING;
     player_position = 0;
     current_lane = LANE_TOP;
+
+    remaining_float_time = FLOAT_TIME;
 }
 
 static inline void do_hit(void) {
@@ -161,7 +167,7 @@ void player_quick_fall(void) {
     }
 }
 
-void player_update(void) {
+void player_update(unsigned int dt) {
     switch (state) {
     case PLAYER_STATE_HITTING: {
         if (current_lane == LANE_BOTTOM) {  // FIXME: do this after animation done
@@ -172,7 +178,10 @@ void player_update(void) {
         break;
     }
     case PLAYER_STATE_FLOATING: {
-        state = PLAYER_STATE_FALLING; // FIXME: do this after some floating time
+        remaining_float_time -= dt;
+        if (remaining_float_time < 0) {
+            do_fall();
+        }
         break;
     }
     case PLAYER_STATE_FALLING: {

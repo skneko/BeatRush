@@ -226,7 +226,7 @@ void logic_end(void) {
 }
 
 void logic_update(unsigned int dt) {
-	player_update();
+	player_update(dt);
 
 	u32 k_down = hidKeysDown();
 
