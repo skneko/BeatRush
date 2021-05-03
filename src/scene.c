@@ -615,19 +615,19 @@ static void draw_failure(void) {
 }
 
 void scene_draw(void) {
+	draw_bg_sprites();
+	draw_notes();
+	draw_player_sprite();
+
+	draw_score();
+	draw_combo();
+	draw_health();
+
 	if (logic_has_failed()) {
 		draw_failure();
 	} else if (audioIsPaused()) {
 		draw_pause();
 	}
-
-	draw_player_sprite();
-	draw_bg_sprites();
-	draw_notes();
-
-	draw_score();
-	draw_combo();
-	draw_health();
 
 	draw_attention_cues();
 
