@@ -44,6 +44,8 @@ void director_end(void) {
 }
 
 void director_change_state(GameState next_state) {
+    printf("Director: state change requested from %d to %d\n", state, next_state);
+
 	previous_end = end;
 	state_change_requested = true;
 
@@ -73,6 +75,7 @@ bool director_main_loop(void){
 	if (quit_requested) {
 		if (state_change_requested) {
 			previous_end();
+            state_change_requested = false;
 		} else {
 			end();
 		}
@@ -80,6 +83,7 @@ bool director_main_loop(void){
 	}
 
 	if (state_change_requested) {
+        printf("Director: changing state to %d\n", state);
 		previous_end();
 		init();
 		state_change_requested = false;
@@ -95,6 +99,10 @@ bool director_main_loop(void){
 	previous_time = current_time;
 
 	update(dt);
+	if (state_change_requested) {
+		return true;
+	}
+
 	draw();
 
 	return true;
@@ -109,7 +117,7 @@ void director_set_audio_dt(bool use_audio_dt) {
 
 	if (using_audio_dt) {
 		previous_time = audioPlaybackPosition();
-	}else {
+	} else {
 		previous_time = osGetTime();
 	}
 }
