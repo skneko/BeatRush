@@ -171,6 +171,7 @@ static void action_up(void) {
 		}
 	} else {
 		printf("HIT wrong lane.\n");
+		player_jump();
 	}
 }
 

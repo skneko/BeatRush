@@ -33,19 +33,25 @@ Lane player_current_lane(void) {
     return current_lane;
 }
 
-static inline void perform_run(void) {
+static inline void do_run(void) {
+    printf("Player: state (%d) -> RUNNING (%d)\n", state, PLAYER_STATE_RUNNING);
+
     state = PLAYER_STATE_RUNNING;
-    player_position = 0;
+    player_position = 1;
     current_lane = LANE_BOTTOM;
 }
 
-static inline void perform_float(void) {
+static inline void do_float(void) {
+    printf("Player: state (%d) -> FLOATING (%d)\n", state, PLAYER_STATE_FLOATING);
+
     state = PLAYER_STATE_FLOATING;
-    player_position = 1;
+    player_position = 0;
     current_lane = LANE_TOP;
 }
 
-static inline void perform_hit(void) {
+static inline void do_hit(void) {
+    printf("Player: state (%d) -> HITTING (%d)\n", state, PLAYER_STATE_HITTING);
+
     state = PLAYER_STATE_HITTING;
 
     // TODO: start hit animation
@@ -53,28 +59,36 @@ static inline void perform_hit(void) {
     next_hit_animation = (next_hit_animation + 1) % HIT_ANIMATION_COUNT;
 }
 
-static inline void perform_jump(void) {
-    current_lane = LANE_TRANSITIONING;
+static inline void do_jump(void) {
+    printf("Player: state (%d) -> JUMPING (%d)\n", state, PLAYER_STATE_JUMPING);
 
+    current_lane = LANE_TRANSITIONING;
     state = PLAYER_STATE_JUMPING;
 }
 
-static inline void perform_quick_jump(void) {
-    perform_jump();
+static inline void do_quick_jump(void) {
+    printf("Player: state (%d) -> QUICK JUMP ...\n", state);
+
+    do_jump();
 
     player_position -= QUICK_JUMP_DISTANCE;
+    player_position = C2D_Clamp(player_position, 0, 1);
 }
 
-static inline void perform_fall(void) {
-    current_lane = LANE_TRANSITIONING;
+static inline void do_fall(void) {
+    printf("Player: state (%d) -> FALLING (%d)\n", state, PLAYER_STATE_FALLING);
 
+    current_lane = LANE_TRANSITIONING;
     state = PLAYER_STATE_FALLING;
 }
 
-static inline void perform_quick_fall(void) {
-    perform_fall();
+static inline void do_quick_fall(void) {
+    printf("Player: state (%d) -> QUICK FALL ...\n", state);
+
+    do_fall();
 
     player_position += QUICK_FALL_DISTANCE;
+    player_position = C2D_Clamp(player_position, 0, 1);
 }
 
 void player_hit(void) {
@@ -82,7 +96,7 @@ void player_hit(void) {
     case PLAYER_STATE_RUNNING:
     case PLAYER_STATE_FLOATING:
     case PLAYER_STATE_HITTING: {
-        perform_hit();
+        do_hit();
         break;
     }
     case PLAYER_STATE_JUMPING:
@@ -99,11 +113,11 @@ void player_jump(void) {
         __attribute__ ((fallthrough));
     }
     case PLAYER_STATE_RUNNING: {
-        perform_jump();
+        do_jump();
         break;
     }
     case PLAYER_STATE_FALLING: {
-        perform_quick_jump();
+        do_quick_jump();
         break;
     }
     case PLAYER_STATE_JUMPING:
@@ -122,7 +136,7 @@ void player_quick_jump(void) {
     case PLAYER_STATE_RUNNING: 
     case PLAYER_STATE_FALLING:
     case PLAYER_STATE_JUMPING: {
-        perform_quick_jump();
+        do_quick_jump();
         break;
     }
     case PLAYER_STATE_FLOATING: {}
@@ -140,7 +154,7 @@ void player_quick_fall(void) {
     case PLAYER_STATE_FLOATING:
     case PLAYER_STATE_FALLING:
     case PLAYER_STATE_JUMPING: {
-        perform_quick_fall();
+        do_quick_fall();
         break;
     }
     case PLAYER_STATE_RUNNING: {}
@@ -150,7 +164,11 @@ void player_quick_fall(void) {
 void player_update(void) {
     switch (state) {
     case PLAYER_STATE_HITTING: {
-        state = current_lane == LANE_BOTTOM ? PLAYER_STATE_RUNNING : PLAYER_STATE_FLOATING; // FIXME: do this after animation done
+        if (current_lane == LANE_BOTTOM) {  // FIXME: do this after animation done
+            do_run();
+        } else {
+            do_float();
+        }
         break;
     }
     case PLAYER_STATE_FLOATING: {
@@ -161,7 +179,7 @@ void player_update(void) {
         player_position += FALL_SPEED;
 
         if (player_position >= 1) {
-            perform_run();
+            do_run();
         }
         break;
     }
@@ -169,7 +187,7 @@ void player_update(void) {
         player_position -= JUMP_SPEED;
 
         if (player_position <= 0) {
-            perform_float();
+            do_float();
         }
         break;
     }

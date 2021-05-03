@@ -82,8 +82,6 @@ static int frame;
 static int w; //since all fg buildings have different widths I need a variable to see where to put the next sprite
 static int bird_dir;
 
-static float player_lerp_position;
-
 static C2D_TextBuf dynamic_text_buf;
 
 static C2D_SpriteSheet load_sprite_sheet(const char *path) {
@@ -187,7 +185,7 @@ void scene_init(void) {
 	dynamic_text_buf = C2D_TextBufNew(DYN_TEXT_BUF_SIZE);
 
 	init_sprites();
-	player_lerp_position = 1;
+	player_init();
 
 	audioPlay();
 }
@@ -195,6 +193,8 @@ void scene_init(void) {
 void scene_end(void) {
 	director_set_audio_dt(false);
 	logic_end();
+	
+	player_end();
 
 	C2D_TextBufDelete(dynamic_text_buf);
 }
