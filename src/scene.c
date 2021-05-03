@@ -13,7 +13,7 @@
 #define DEPTH_FG_BUILDINGS			 0.08
 #define DEPTH_ROAD					 0.1
 #define DEPTH_NOTES					 0.21
-#define DEPTH_PLAYER				 0.22
+#define DEPTH_PLAYER				 0.5
 #define DEPTH_UI_SCORE			     0.7
 #define DEPTH_UI_COMBO				 0.7
 #define DEPTH_UI_HEALTH				 0.7
@@ -118,7 +118,7 @@ static void init_sprites(void) {
 	C2D_SpriteSetCenter(player_sprite, .5f, .5f);
 	set_calculated_player_pos(player_sprite);
 	C2D_SpriteSetDepth(player_sprite, DEPTH_PLAYER);
-	C2D_SpriteScale(player_sprite, 2, 2);
+	//C2D_SpriteScale(player_sprite, 1, 1);
 
 	//------------------------------------------------------------------------------------------------
 	//init bg sprite to default state (lmao OK)
@@ -440,26 +440,7 @@ static void draw_bg_sprites(void){
 		}
 		C2D_DrawSprite(bg_building_sprite);
 	}
-	//fg building
-	for (int i = 12; i < 29; i++) {
-		C2D_Sprite *fg_building_sprite = &bg_sprites[i];
-		if (fg_building_sprite->params.pos.x <= -fg_building_sprite->params.pos.w) {
-			C2D_SpriteSetPos(fg_building_sprite,
-							 w,
-							 FG_BUILD_MIN_HEIGHT - (rand() % FG_BUILD_MAX_HEIGHT)); //40 because that's the building sprite's width
-			w += fg_building_sprite->params.pos.w + FG_DISTANCE_BW_BUILDINGS;
-		}
-		if (frame % 3 == 0) {
-			C2D_SpriteMove(fg_building_sprite, FG_BUILDINGS_SPEED, 0);
-		}
-		C2D_DrawSprite(fg_building_sprite);
-	}
-	if (frame % 3 == 0) {
-		w += FG_BUILDINGS_SPEED;
-	}
-	//road TEMPORARY
-	C2D_Sprite *road = &bg_sprites[29];
-	C2D_DrawSprite(road);
+
 	//birdo
 	C2D_Sprite *birdo = &bg_sprites[30];
 	if (frame % 40 == 0) {
@@ -492,6 +473,27 @@ static void draw_bg_sprites(void){
 	if (birdo->params.pos.y < 5) {
 		bird_dir = -bird_dir;
 	}
+
+	//fg building
+	for (int i = 12; i < 29; i++) {
+		C2D_Sprite *fg_building_sprite = &bg_sprites[i];
+		if (fg_building_sprite->params.pos.x <= -fg_building_sprite->params.pos.w) {
+			C2D_SpriteSetPos(fg_building_sprite,
+							 w,
+							 FG_BUILD_MIN_HEIGHT - (rand() % FG_BUILD_MAX_HEIGHT)); //40 because that's the building sprite's width
+			w += fg_building_sprite->params.pos.w + FG_DISTANCE_BW_BUILDINGS;
+		}
+		if (frame % 3 == 0) {
+			C2D_SpriteMove(fg_building_sprite, FG_BUILDINGS_SPEED, 0);
+		}
+		C2D_DrawSprite(fg_building_sprite);
+	}
+	if (frame % 3 == 0) {
+		w += FG_BUILDINGS_SPEED;
+	}
+	//road TEMPORARY
+	C2D_Sprite *road = &bg_sprites[29];
+	C2D_DrawSprite(road);
 
 	//next frame
 	frame += 1;
