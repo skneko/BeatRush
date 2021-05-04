@@ -1,5 +1,19 @@
 --atlas -f rgba8888 -z auto
-p1.png
-p2.png
-p3.png
-p4.png
+run_anim_1.png
+run_anim_2.png
+run_anim_3.png
+run_anim_4.png
+run_anim_5.png
+run_anim_6.png
+run_anim_7.png
+run_anim_8.png
+run_anim_9.png
+run_anim_10.png
+r_punch_1.png
+r_punch_2.png
+l_punch_1.png
+l_punch_2.png
+uppercut_1.png
+uppercut_2.png
+down_kick_1.png
+down_kick_2.png

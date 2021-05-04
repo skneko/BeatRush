@@ -1,12 +1,20 @@
 #include "player.h"
 
-#define HIT_ANIMATION_COUNT     2
 #define QUICK_JUMP_DISTANCE     0.8
 #define QUICK_FALL_DISTANCE     0.8
 #define JUMP_SPEED              0.35
 #define FALL_SPEED              0.2
 
 #define FLOAT_TIME              650
+
+#define RUN_ANIM_SPEED		    5 // Delta frames. Best is 5, higher for debug
+#define RUN_ANIM_OFFSET         0
+#define RUN_ANIM_LIMIT          10
+
+#define HIT_ANIM_COUNT          2
+#define HIT_ANIM_SPEED          5
+#define HIT_ANIM_OFFSET         10
+#define HIT_ANIM_STRIDE         2
 
 static PlayerState state;
 static Lane current_lane;
@@ -15,7 +23,10 @@ static float player_position;
 
 static int remaining_float_time;
 
-static int next_hit_animation;
+static unsigned int anim_current_frame;
+static unsigned int anim_speed;
+static unsigned int real_frames_elapsed;
+static unsigned int next_hit_animation;
 
 void player_init(void) {
     state = PLAYER_STATE_RUNNING;
@@ -23,6 +34,9 @@ void player_init(void) {
 
     player_position = 1;
 
+    anim_current_frame = 0;
+    anim_speed = RUN_ANIM_SPEED;
+    real_frames_elapsed = 0;
     next_hit_animation = 0;
 }
 
@@ -43,6 +57,8 @@ static inline void do_run(void) {
     state = PLAYER_STATE_RUNNING;
     player_position = 1;
     current_lane = LANE_BOTTOM;
+
+    anim_speed = RUN_ANIM_SPEED;
 }
 
 static inline void do_float(void) {
@@ -60,9 +76,9 @@ static inline void do_hit(void) {
 
     state = PLAYER_STATE_HITTING;
 
-    // TODO: start hit animation
-
-    next_hit_animation = (next_hit_animation + 1) % HIT_ANIMATION_COUNT;
+    anim_current_frame = 0;
+    anim_speed = HIT_ANIM_SPEED;
+    next_hit_animation = (next_hit_animation + 1) % HIT_ANIM_COUNT;
 }
 
 static inline void do_jump(void) {
@@ -168,12 +184,21 @@ void player_quick_fall(void) {
 }
 
 void player_update(unsigned int dt) {
+    real_frames_elapsed++;
+
+    if (real_frames_elapsed > anim_speed) {
+        anim_current_frame++;
+        real_frames_elapsed = 0;
+    }
+
     switch (state) {
     case PLAYER_STATE_HITTING: {
-        if (current_lane == LANE_BOTTOM) {  // FIXME: do this after animation done
-            do_run();
-        } else {
-            do_float();
+        if (anim_current_frame >= HIT_ANIM_STRIDE) {
+            if (current_lane == LANE_BOTTOM) {
+                do_run();
+            } else {
+                do_float();
+            }
         }
         break;
     }
@@ -213,10 +238,12 @@ static void set_calculated_player_pos(C2D_Sprite *player_sprite) {
 	C2D_SpriteSetPos(player_sprite, HITLINE_LEFT_MARGIN, top_y + dy);
 }
 
-void player_draw(C2D_Sprite char_sprites[]) {   // FIXME: don't accept whole array?
-switch (state) {
+void player_draw(C2D_Sprite *player_sprite, C2D_SpriteSheet player_sprite_sheet) {
+    switch (state) {
     case PLAYER_STATE_HITTING: {
-        // TODO
+        int offset = HIT_ANIM_OFFSET + next_hit_animation * HIT_ANIM_STRIDE;
+        int image_index = offset + anim_current_frame;
+        player_sprite->image = C2D_SpriteSheetGetImage(player_sprite_sheet, image_index);
         break;
     }
     case PLAYER_STATE_FLOATING: {
@@ -232,12 +259,12 @@ switch (state) {
         break;
     }
     case PLAYER_STATE_RUNNING: {
-        // TODO
+        int image_index = RUN_ANIM_OFFSET + anim_current_frame % RUN_ANIM_LIMIT;
+        player_sprite->image = C2D_SpriteSheetGetImage(player_sprite_sheet, image_index);
         break;
     }
     }
 
-    C2D_Sprite *player_sprite = &char_sprites[0];
 	set_calculated_player_pos(player_sprite);
 	C2D_DrawSprite(player_sprite);
 }
