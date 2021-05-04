@@ -59,7 +59,9 @@
 #define FG_BUILD_MIN_HEIGHT          100 //ABSOLUTE
 #define FG_BUILD_MAX_HEIGHT          100 //RELATIVE
 #define FG_DISTANCE_BW_BUILDINGS     10 //10 base, more if random
-// ***
+
+//char
+#define CHAR_ANIM_SPEED				 15 //delta frames to change to next frame of animation || best is 5, higher for debug
 
 #define PLAYER_JUMP_SPEED			 0.3
 
@@ -77,6 +79,14 @@ static C2D_SpriteSheet note_sprite_sheet;
 static C2D_SpriteSheet bg_sprite_sheet;
 
 static int frame;
+static int currentAnimFrame; //frame of main character currently displayed
+
+//#############################
+//DEBUG, SUSTITUIR POR EL GRAFO DE ESTADOS DE ANIMACION
+//#############################
+static int currentAnimState; //0 -> running,	1 -> r_punch,	2 -> l_punch
+static int lastPunch; //0 -> right, 1 -> left
+//#############################
 
 static int w; //since all fg buildings have different widths I need a variable to see where to put the next sprite
 static int bird_dir;
@@ -115,6 +125,9 @@ static void init_sprites(void) {
 	//init char sprite to default state
 	C2D_Sprite *player_sprite = &char_sprites[0]; //the sprite for the bg skybox, give or take you know what I mean
 	C2D_SpriteFromSheet(player_sprite, char_sprite_sheet, 0);
+	currentAnimFrame = 0;
+	currentAnimState = 0; //#############################
+	lastPunch = 1; //#############################
 	C2D_SpriteSetCenter(player_sprite, .5f, .5f);
 	set_calculated_player_pos(player_sprite);
 	C2D_SpriteSetDepth(player_sprite, DEPTH_PLAYER);
@@ -403,6 +416,20 @@ static void draw_attention_cues(void) {
 	}
 }
 
+//#############################
+void strike(void){
+	if(lastPunch == 0) {
+		currentAnimState = 2;
+		lastPunch = 1;
+	}
+	if(lastPunch == 1) {
+		currentAnimState = 1;
+		lastPunch = 0;
+	}
+	currentAnimFrame = 0;
+}
+//#############################
+
 static void draw_player_sprite(void){
 	Lane target_lane = logic_target_lane();
 
@@ -417,6 +444,35 @@ static void draw_player_sprite(void){
 	//player debug sprite
 	C2D_Sprite *player_sprite = &char_sprites[0];
 	set_calculated_player_pos(player_sprite);
+
+	//anim //#############################
+	switch (currentAnimState)
+	{
+	case 0: //running
+		player_sprite->image = C2D_SpriteSheetGetImage(char_sprite_sheet, (frame % CHAR_ANIM_SPEED == 0) ? (++currentAnimFrame)%10 : currentAnimFrame%10); //animate
+		break;
+	case 1: //r_punch
+		player_sprite->image = C2D_SpriteSheetGetImage(char_sprite_sheet, (frame % CHAR_ANIM_SPEED == 0) ? 10 + (++currentAnimFrame) : 10 + currentAnimFrame); //animate
+		if (currentAnimFrame >= 1) {
+			currentAnimState = 0;
+			currentAnimFrame = 0;
+			}
+		lastPunch = 0;
+		break;
+	case 2: //l_punch
+		player_sprite->image = C2D_SpriteSheetGetImage(char_sprite_sheet, (frame % CHAR_ANIM_SPEED == 0) ? 12 + (++currentAnimFrame) : 12 + currentAnimFrame); //animate
+		if (currentAnimFrame >= 1) {
+			currentAnimState = 0;
+			currentAnimFrame = 0;
+			}
+		lastPunch = 1;
+		break;
+	default:
+		break;
+	}
+	//player_sprite->image = C2D_SpriteSheetGetImage(char_sprite_sheet, (frame % CHAR_ANIM_SPEED == 0) ? (++currentAnimFrame)%10 : currentAnimFrame%10); //animate
+	//#############################
+
 	C2D_DrawSprite(player_sprite);
 }
 

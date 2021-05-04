@@ -92,6 +92,10 @@ static void check_note(void) {
 		return;
 	}
 
+	//#########################
+	strike();
+	//#########################
+
 	unsigned long actual_position = audioPlaybackPosition();
 	unsigned long expected_position = next_note_to_hit->position;
 
