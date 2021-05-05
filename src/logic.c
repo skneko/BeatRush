@@ -53,6 +53,9 @@ static unsigned int health_regen_time;
 static unsigned int time_to_health_regen;
 static bool has_failed;
 
+HitAssessment top_hit_assessment;
+HitAssessment bottom_hit_assessment;
+
 static void increase_score(int increment) {
 	score += increment * combo_multiplier + combo / 10;
 }
@@ -91,16 +94,22 @@ static bool check_note(void) {
 		return false;
 	}
 
-	unsigned long actual_position = audioPlaybackPosition();
+	unsigned long press_position = audioPlaybackPosition();
 	unsigned long expected_position = next_note_to_hit->position;
 
-	long diff = actual_position + global_offset - expected_position;
+	long diff = press_position + global_offset - expected_position;
 	unsigned long abs_diff = labs(diff);
 
 	printf("HIT %ldms... ", diff);
 
+	HitAssessment *hit_assessment;
 	if (abs_diff <= HIT_WINDOW_MISS) {
 		next_note_to_hit->hidden = true;
+
+		hit_assessment = next_note_to_hit->topLane ? &top_hit_assessment : &bottom_hit_assessment;
+		hit_assessment->valid = true;
+		hit_assessment->press_position = press_position;
+		hit_assessment->expected_position = expected_position;
 
 		next_note_to_hit++;
 		notes_passed++;
@@ -110,12 +119,16 @@ static bool check_note(void) {
 	if (abs_diff <= HIT_WINDOW_PERFECT) {
 		printf("PERFECT.\n");
 
+		hit_assessment->valuation = HIT_VAL_PERFECT;
+
 		increase_score(SCORE_PERFECT);
 		increase_combo();
 
 		hits_perfect++;
 	} else if (abs_diff <= HIT_WINDOW_GOOD) {
 		printf("GOOD.\n");
+
+		hit_assessment->valuation = HIT_VAL_GOOD;
 
 		increase_score(SCORE_GOOD);
 		increase_combo();
@@ -124,12 +137,16 @@ static bool check_note(void) {
 	} else if (abs_diff <= HIT_WINDOW_OK) {
 		printf("OK.\n");
 
+		hit_assessment->valuation = HIT_VAL_OK;
+
 		increase_score(SCORE_OK);
 		increase_combo();
 
 		hits_ok++;
 	} else if (abs_diff <= HIT_WINDOW_MISS) {
 		printf("MISS.\n");
+
+		hit_assessment->valuation = HIT_VAL_MISS;
 
 		increase_score(SCORE_MISS);
 		take_damage();
@@ -220,6 +237,9 @@ void logic_init() {
 	health_regen_time = (unsigned int)(beatmap->approach_time * HEALTH_REGEN_TIME_MULT);
 	time_to_health_regen = 0;
 	has_failed = false;
+
+	top_hit_assessment.valid = false;
+	bottom_hit_assessment.valid = false;
 }
 
 void logic_end(void) {
@@ -288,4 +308,12 @@ bool logic_is_invencible(void) {
 
 bool logic_has_failed(void) {
 	return has_failed;
+}
+
+extern HitAssessment logic_top_hit_assessment(void) {
+	return top_hit_assessment;
+}
+
+extern HitAssessment logic_bottom_hit_assessment(void) {
+	return bottom_hit_assessment;
 }
