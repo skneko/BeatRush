@@ -39,10 +39,12 @@ SOURCES     := src
 DATA        := data
 INCLUDES    := include
 GRAPHICS    := gfx
+FONTS    	:= fonts
 OUTPUT      := output
 RESOURCES   := assets
 ROMFS       := romfs
 GFXBUILD    := $(ROMFS)/gfx
+FONTBUILD   := $(ROMFS)/fonts
 #---------------------------------------------------------------------------------
 # Resource Setup
 #---------------------------------------------------------------------------------
@@ -95,6 +97,7 @@ SFILES             := $(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
 PICAFILES          := $(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.v.pica)))
 SHLISTFILES        := $(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.shlist)))
 GFXFILES           := $(foreach dir,$(GRAPHICS),$(notdir $(wildcard $(dir)/*.t3s)))
+FONTFILES          := $(foreach dir,$(FONTS),$(notdir $(wildcard $(dir)/*.ttf)))
 BINFILES           := $(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
 
 #---------------------------------------------------------------------------------
@@ -107,6 +110,7 @@ else
 endif
 #---------------------------------------------------------------------------------
 export T3XFILES	      := $(GFXFILES:.t3s=.t3x)
+export BCFNTFILES     := $(patsubst %.ttf, $(FONTBUILD)/%.bcfnt, $(FONTFILES))
 
 export OFILES_SOURCES := $(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(SFILES:.s=.o)
 export OFILES_BIN     := $(addsuffix .o,$(BINFILES)) \
@@ -154,38 +158,45 @@ endif
 #---------------------------------------------------------------------------------
 .PHONY : clean all bootstrap 3dsx cia elf 3ds citra release
 
-all : bootstrap
+all : bootstrap $(BCFNTFILES)
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 
-3dsx : bootstrap
+3dsx : bootstrap $(BCFNTFILES)
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile $@
 
-cia : bootstrap
+cia : bootstrap $(BCFNTFILES)
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile $@
 
-3ds : bootstrap
+3ds : bootstrap $(BCFNTFILES)
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile $@
 
-elf : bootstrap
+elf : bootstrap $(BCFNTFILES)
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile $@
 
-citra : bootstrap
+citra : bootstrap $(BCFNTFILES)
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile $@
 
-citra-qt : bootstrap
+citra-qt : bootstrap $(BCFNTFILES)
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile $@
 
-release : bootstrap
+release : bootstrap $(BCFNTFILES)
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile $@
 
 bootstrap :
 	@[ -d $(BUILD) ] || mkdir -p $(BUILD)
 	@[ -d $(OUTPUT_DIR) ] || mkdir -p $(OUTPUT_DIR)
 	@[ -d $(GFXBUILD) ] || mkdir -p $(GFXBUILD)
+	@[ -d $(FONTBUILD) ] || mkdir -p $(FONTBUILD)
 
 clean :
 	@echo clean ...
 	@rm -rf $(BUILD) $(OUTPUT)
+
+#---------------------------------------------------------------------------------
+$(FONTBUILD)%.bcfnt : $(FONTS)%.ttf
+#---------------------------------------------------------------------------------
+	@echo $(notdir $<)
+	@mkbcfnt -o $(TOPDIR)/$(FONTBUILD)/$*.bcfnt $<
 
 #---------------------------------------------------------------------------------
 else
@@ -225,7 +236,7 @@ COMMON_MAKEROM_PARAMS := -rsf $(RSF) -target t -exefslogo -elf $(OUTPUT_FILE).el
 -DAPP_SYSTEM_MODE_EXT="Legacy" -major "$(APP_VERSION_MAJOR)" -minor "$(APP_VERSION_MINOR)" \
 -micro "$(APP_VERSION_MICRO)"
 
-ifeq ($(OS),Windows_NT)
+ifeq ($(OS),Windows_NT)			# FIXME: .exe likely unnecessary
 	MAKEROM = makerom.exe
 	BANNERTOOL = bannertool.exe
 	CITRA = citra.exe
@@ -296,7 +307,7 @@ elf : $(OUTPUT_FILE).elf
 citra : 3dsx
 	$(CITRA) $(OUTPUT_FILE).3dsx
 
-citra-qt: 3dsx
+citra-qt : 3dsx
 	$(CITRA-QT) $(OUTPUT_FILE).3dsx
 
 release : $(OUTPUT_FILE).zip cia 3ds
@@ -341,7 +352,7 @@ endef
 	@$(call shader-as,$(foreach file,$(shell cat $<),$(dir $<)$(file)))
 
 #---------------------------------------------------------------------------------
-%.t3x %.h :  %.t3s
+%.t3x %.h : %.t3s
 #---------------------------------------------------------------------------------
 	@echo $(notdir $<)
 	@$(TEX3DS) -i $< -H $*.h -d $*.d -o $(TOPDIR)/$(GFXBUILD)/$*.t3x
