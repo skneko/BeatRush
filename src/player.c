@@ -1,11 +1,11 @@
 #include "player.h"
 
-#define QUICK_JUMP_DISTANCE     0.8
-#define QUICK_FALL_DISTANCE     0.8
+#define QUICK_JUMP_DISTANCE     0.75
+#define QUICK_FALL_DISTANCE     0.75
 #define JUMP_SPEED              0.35
 #define FALL_SPEED              0.2
 
-#define FLOAT_TIME              650
+#define FLOAT_TIME              500
 
 #define RUN_ANIM_SPEED		    5 // Delta frames. Best is 5, higher for debug
 #define RUN_ANIM_OFFSET         0
@@ -14,7 +14,15 @@
 #define HIT_ANIM_COUNT          2
 #define HIT_ANIM_SPEED          5
 #define HIT_ANIM_OFFSET         10
-#define HIT_ANIM_STRIDE         2
+#define HIT_ANIM_LENGTH         2
+
+#define JUMP_ANIM_SPEED         9
+#define JUMP_ANIM_OFFSET        14
+#define JUMP_ANIM_LENGTH        2
+
+#define FALL_ANIM_SPEED         5
+#define FALL_ANIM_OFFSET        16
+#define FALL_ANIM_LENGTH        2
 
 static PlayerState state;
 static Lane current_lane;
@@ -86,6 +94,9 @@ static inline void do_jump(void) {
 
     current_lane = LANE_TRANSITIONING;
     state = PLAYER_STATE_JUMPING;
+
+    anim_current_frame = 0;
+    anim_speed = JUMP_ANIM_SPEED;
 }
 
 static inline void do_quick_jump(void) {
@@ -102,6 +113,9 @@ static inline void do_fall(void) {
 
     current_lane = LANE_TRANSITIONING;
     state = PLAYER_STATE_FALLING;
+
+    anim_current_frame = 0;
+    anim_speed = FALL_ANIM_SPEED;
 }
 
 static inline void do_quick_fall(void) {
@@ -193,7 +207,7 @@ void player_update(unsigned int dt) {
 
     switch (state) {
     case PLAYER_STATE_HITTING: {
-        if (anim_current_frame >= HIT_ANIM_STRIDE) {
+        if (anim_current_frame >= HIT_ANIM_LENGTH) {
             if (current_lane == LANE_BOTTOM) {
                 do_run();
             } else {
@@ -241,27 +255,28 @@ static void set_calculated_player_pos(C2D_Sprite *player_sprite) {
 void player_draw(C2D_Sprite *player_sprite, C2D_SpriteSheet player_sprite_sheet) {
     switch (state) {
     case PLAYER_STATE_HITTING: {
-        int offset = HIT_ANIM_OFFSET + next_hit_animation * HIT_ANIM_STRIDE;
+        int offset = HIT_ANIM_OFFSET + next_hit_animation * HIT_ANIM_LENGTH;
         int image_index = offset + anim_current_frame;
         player_sprite->image = C2D_SpriteSheetGetImage(player_sprite_sheet, image_index);
         break;
     }
-    case PLAYER_STATE_FLOATING: {
-        // TODO
-        break;
-    }
     case PLAYER_STATE_FALLING: {
-        // TODO
+        int image_index = FALL_ANIM_OFFSET + C2D_Clamp(anim_current_frame, 0, FALL_ANIM_LENGTH - 1);
+        player_sprite->image = C2D_SpriteSheetGetImage(player_sprite_sheet, image_index);
         break;
     }
-    case PLAYER_STATE_JUMPING: {
-        // TODO
+    case PLAYER_STATE_JUMPING:
+    case PLAYER_STATE_FLOATING: {
+        int image_index = JUMP_ANIM_OFFSET + C2D_Clamp(anim_current_frame, 0, JUMP_ANIM_LENGTH - 1);
+        player_sprite->image = C2D_SpriteSheetGetImage(player_sprite_sheet, image_index);
         break;
     }
     case PLAYER_STATE_RUNNING: {
-        int image_index = RUN_ANIM_OFFSET + anim_current_frame % RUN_ANIM_LIMIT;
-        player_sprite->image = C2D_SpriteSheetGetImage(player_sprite_sheet, image_index);
-        break;
+        if (anim_current_frame > 1) {
+            int image_index = RUN_ANIM_OFFSET + anim_current_frame % RUN_ANIM_LIMIT;
+            player_sprite->image = C2D_SpriteSheetGetImage(player_sprite_sheet, image_index);
+            break;
+        }
     }
     }
 
