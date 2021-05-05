@@ -25,7 +25,6 @@
 
 #define SCORE_LABEL_BUF_SIZE         13
 #define COMBO_LABEL_BUF_SIZE         13
-#define HEALTH_ICON_AREA_BUF_SIZE    41
 #define REST_TIME_LABEL_BUF_SIZE     13
 #define PAUSE_LABEL_BUF_SIZE         13
 #define DYN_TEXT_BUF_SIZE            4096
@@ -49,6 +48,7 @@
 #define MAX_CHAR_SPRITES             1 //SUGGESTIVE     ###- NOT FINAL -###
 #define MAX_NOTE_SPRITES             50 //SUGGESTIVE     ###- NOT FINAL -###
 #define MAX_BG_SPRITES               35 //SUGGESTIVE     ###- NOT FINAL -###
+#define MAX_HEART_ICONS				 2
 
 //bg_buildings
 #define BG_BUILDINGS_SPEED           -1
@@ -61,6 +61,17 @@
 #define FG_BUILD_MAX_HEIGHT          100 //RELATIVE
 #define FG_DISTANCE_BW_BUILDINGS     10 //10 base, more if random
 
+// Health icons
+#define IDX_HEART_FULL				 0
+#define IDX_HEART_EMPTY				 1
+#define SHEET_IDX_HEART_FULL		 0
+#define SHEET_IDX_HEART_EMPTY	 	 1
+#define HEART_AREA_X				 40
+#define HEART_AREA_Y				 200
+#define HEART_ICON_STRIDE			 20
+
+// ---
+
 static Note *next_note_to_draw;
 static unsigned int remaining_notes_to_draw;
 static float speed;
@@ -70,9 +81,12 @@ static bool in_rest;
 static C2D_Sprite char_sprites[MAX_CHAR_SPRITES];
 static C2D_Sprite note_sprites[MAX_NOTE_SPRITES];
 static C2D_Sprite bg_sprites[MAX_BG_SPRITES];
+static C2D_Image heart_icons[MAX_HEART_ICONS];
+
 static C2D_SpriteSheet char_sprite_sheet;
 static C2D_SpriteSheet note_sprite_sheet;
 static C2D_SpriteSheet bg_sprite_sheet;
+static C2D_SpriteSheet ui_sprite_sheet;
 
 static int frame;
 
@@ -97,6 +111,7 @@ static void init_sprites(void) {
 	char_sprite_sheet = load_sprite_sheet("romfs:/gfx/run_char_anim.t3x"); //char
 	note_sprite_sheet = load_sprite_sheet("romfs:/gfx/note.t3x"); //note  ### TO DRAW ###
 	bg_sprite_sheet = load_sprite_sheet("romfs:/gfx/bg.t3x"); //bg        ### TO DRAW ###
+	ui_sprite_sheet = load_sprite_sheet("romfs:/gfx/ui.t3x");
 
 	//------------------------------------------------------------------------------------------------
 	//init char sprite to default state
@@ -167,6 +182,9 @@ static void init_sprites(void) {
 		//C2D_SpriteScale(note_sprite, 1.5f, 1.5f);
 		C2D_SpriteSetDepth(note_sprite, DEPTH_NOTES);
 	}
+
+	heart_icons[IDX_HEART_FULL] = C2D_SpriteSheetGetImage(ui_sprite_sheet, SHEET_IDX_HEART_FULL);
+	heart_icons[IDX_HEART_EMPTY] = C2D_SpriteSheetGetImage(ui_sprite_sheet, SHEET_IDX_HEART_EMPTY);
 }
 
 void scene_init(void) {
@@ -322,24 +340,18 @@ static void draw_combo(void) {
 }
 
 static void draw_health(void) {
-	C2D_Text healthIconArea;
-	char buf[HEALTH_ICON_AREA_BUF_SIZE];
-
 	unsigned int health = logic_current_health();
+	unsigned int max_health = logic_max_health();
 
-	C2D_TextBufClear(dynamic_text_buf);
-
-	buf[0] = '\0';
-	for (unsigned int i = 0; i < health; i++) {
-		strcat(buf, "♥");
+	unsigned int i = 0;
+	for (; i < health; i++) {
+		float x = HEART_AREA_X + HEART_ICON_STRIDE * i;
+		C2D_DrawImageAt(heart_icons[IDX_HEART_FULL], x, HEART_AREA_Y, DEPTH_UI_HEALTH, NULL, 1, 1);
 	}
-
-	C2D_TextParse(&healthIconArea, dynamic_text_buf, buf);
-	C2D_TextOptimize(&healthIconArea);
-	C2D_DrawText(
-		&healthIconArea, C2D_WithColor | C2D_AtBaseline | C2D_AlignCenter,
-		130.0f, 230.0f, DEPTH_UI_HEALTH, 1.5f, 1.0f,
-		logic_is_invencible() ? C2D_BLUE : C2D_RED);
+	for (; i < max_health; i++) {
+		float x = HEART_AREA_X + HEART_ICON_STRIDE * i;
+		C2D_DrawImageAt(heart_icons[IDX_HEART_EMPTY], x, HEART_AREA_Y, DEPTH_UI_HEALTH, NULL, 1, 1);
+	}
 }
 
 static void draw_attention_warnings(long long time_until_next) {
@@ -539,6 +551,21 @@ static void draw_debug_keypress_hint(bool top_lane) {
 		C2D_ORANGE);
 }
 
+static void draw_debug_invincibility_hint(void) {
+	if (logic_is_invencible()) {
+		C2D_Text invincibility_hint_label;
+
+		const char *message = "INV";
+		C2D_TextBufClear(dynamic_text_buf);
+		C2D_TextParse(&invincibility_hint_label, dynamic_text_buf, message);
+		C2D_TextOptimize(&invincibility_hint_label);
+		C2D_DrawText(
+			&invincibility_hint_label, C2D_WithColor | C2D_AtBaseline | C2D_AlignCenter,
+			50, 230, DEPTH_DEBUG_BASE, 0.6, 0.6,
+			C2D_BLUE);
+	}
+}
+
 static void draw_debug_keypress_hints(void) {
 	u32 k_down = hidKeysHeld();
 
@@ -557,6 +584,7 @@ static void draw_debug_overlay(void) {
 	draw_debug_rulers();
 
 	draw_debug_keypress_hints();
+	draw_debug_invincibility_hint();
 }
 
 static void draw_pause(void) {
