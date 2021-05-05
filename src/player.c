@@ -249,7 +249,7 @@ static void set_calculated_player_pos(C2D_Sprite *player_sprite) {
 
 	float dy = (bottom_y - top_y) * player_position;
 
-	C2D_SpriteSetPos(player_sprite, HITLINE_LEFT_MARGIN, top_y + dy);
+	C2D_SpriteSetPos(player_sprite, PLAYER_LEFT_MARGIN, top_y + dy);
 }
 
 void player_draw(C2D_Sprite *player_sprite, C2D_SpriteSheet player_sprite_sheet) {

@@ -11,7 +11,8 @@
 #define TOP_SCREEN_CENTER_HOR   200
 #define TOP_SCREEN_CENTER_VER   120
 
-#define HITLINE_LEFT_MARGIN     50
+#define HITLINE_LEFT_MARGIN     65
+#define PLAYER_LEFT_MARGIN      40
 #define LANE_TOP_MARGIN         60
 #define LANE_BOTTOM_MARGIN      60
 #define LANE_HEIGHT             40
