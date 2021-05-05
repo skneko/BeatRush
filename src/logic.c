@@ -274,8 +274,12 @@ bool logic_is_full_combo(void) {
 	return combo == notes_passed;
 }
 
-unsigned short logic_health(void) {
+unsigned short logic_current_health(void) {
 	return health;
+}
+
+unsigned short logic_max_health(void) {
+	return HEALTH_MAX;
 }
 
 bool logic_is_invencible(void) {

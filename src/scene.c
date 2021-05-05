@@ -325,7 +325,7 @@ static void draw_health(void) {
 	C2D_Text healthIconArea;
 	char buf[HEALTH_ICON_AREA_BUF_SIZE];
 
-	unsigned int health = logic_health();
+	unsigned int health = logic_current_health();
 
 	C2D_TextBufClear(dynamic_text_buf);
 
