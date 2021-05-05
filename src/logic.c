@@ -102,11 +102,10 @@ static bool check_note(void) {
 
 	printf("HIT %ldms... ", diff);
 
-	HitAssessment *hit_assessment;
+	HitAssessment *hit_assessment = next_note_to_hit->topLane ? &top_hit_assessment : &bottom_hit_assessment; 
 	if (abs_diff <= HIT_WINDOW_MISS) {
 		next_note_to_hit->hidden = true;
 
-		hit_assessment = next_note_to_hit->topLane ? &top_hit_assessment : &bottom_hit_assessment;
 		hit_assessment->valid = true;
 		hit_assessment->press_position = press_position;
 		hit_assessment->expected_position = expected_position;
