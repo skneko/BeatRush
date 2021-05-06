@@ -59,10 +59,10 @@ RSF             := $(TOPDIR)/$(RESOURCES)/template.rsf
 #---------------------------------------------------------------------------------
 ARCH        := -march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 COMMON      := -Wall -Wextra -O2 -mword-relocations -fomit-frame-pointer -ffunction-sections $(ARCH) $(INCLUDE) -DARM11 -D_3DS `$(PREFIX)pkg-config opusfile --cflags`
-CFLAGS      := $(COMMON) -std=gnu99
-CXXFLAGS    := $(COMMON) -fno-rtti -fno-exceptions -std=gnu++11
 ASFLAGS     := $(ARCH)
 LDFLAGS     = -specs=3dsx.specs $(ARCH) -Wl,-Map,$(notdir $*.map)
+override CFLAGS      += $(COMMON) -std=gnu99
+override CXXFLAGS    += $(COMMON) -fno-rtti -fno-exceptions -std=gnu++11
 
 #---------------------------------------------------------------------------------
 # Libraries needed to link into the executable.
