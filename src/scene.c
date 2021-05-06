@@ -48,6 +48,7 @@
 #define MAX_CHAR_SPRITES             1 //SUGGESTIVE     ###- NOT FINAL -###
 #define MAX_NOTE_SPRITES             50 //SUGGESTIVE     ###- NOT FINAL -###
 #define MAX_BG_SPRITES               35 //SUGGESTIVE     ###- NOT FINAL -###
+#define MAX_HIT_EVAL_SPRITES         2 //0	-	DOWN,	1	-	UP
 #define MAX_HEART_ICONS				 2
 
 //bg_buildings
@@ -70,6 +71,14 @@
 #define HEART_AREA_Y				 200
 #define HEART_ICON_STRIDE			 20
 
+// hit evaluation
+#define HIT_EVAL_TIME_ALIVE			 300
+#define HIT_EVAL_SCROLL_SPEED		 0.05f
+#define HIT_EVAL_BOT_X				 10
+#define HIT_EVAL_BOT_Y 				 120
+#define HIT_EVAL_TOP_X				 10
+#define HIT_EVAL_TOP_Y				 20
+
 // ---
 
 static Note *next_note_to_draw;
@@ -81,6 +90,7 @@ static bool in_rest;
 static C2D_Sprite char_sprites[MAX_CHAR_SPRITES];
 static C2D_Sprite note_sprites[MAX_NOTE_SPRITES];
 static C2D_Sprite bg_sprites[MAX_BG_SPRITES];
+static C2D_Sprite hit_eval_sprites[MAX_HIT_EVAL_SPRITES];
 static C2D_Image heart_icons[MAX_HEART_ICONS];
 
 static C2D_SpriteSheet char_sprite_sheet;
@@ -187,6 +197,22 @@ static void init_sprites(void) {
 
 	heart_icons[IDX_HEART_FULL] = C2D_SpriteSheetGetImage(ui_sprite_sheet, SHEET_IDX_HEART_FULL);
 	heart_icons[IDX_HEART_EMPTY] = C2D_SpriteSheetGetImage(ui_sprite_sheet, SHEET_IDX_HEART_EMPTY);
+
+	//-----------------------------------------------------
+	//hit evals
+	C2D_Sprite *bot_eval_sprite = &hit_eval_sprites[0];
+	C2D_SpriteFromSheet(bot_eval_sprite, ui_sprite_sheet, 2);
+	//C2D_SpriteSetCenter(bot_eval_sprite, .5f, .5f);
+	//C2D_SpriteSetPos(bot_eval_sprite, TOP_SCREEN_CENTER_HOR, TOP_SCREEN_CENTER_VER);
+	//C2D_SpriteScale(bot_eval_sprite, 0.6f, 0.6f);
+	C2D_SpriteSetDepth(bot_eval_sprite, DEPTH_UI_SCORE);
+
+	C2D_Sprite *top_eval_sprite = &hit_eval_sprites[1];
+	C2D_SpriteFromSheet(top_eval_sprite, ui_sprite_sheet, 2);
+	//C2D_SpriteSetCenter(top_eval_sprite, .5f, .5f);
+	//C2D_SpriteSetPos(top_eval_sprite, TOP_SCREEN_CENTER_HOR, TOP_SCREEN_CENTER_VER);
+	//C2D_SpriteScale(top_eval_sprite, 0.6f, 0.6f);
+	C2D_SpriteSetDepth(top_eval_sprite, DEPTH_UI_SCORE);
 }
 
 void scene_init(void) {
@@ -200,7 +226,7 @@ void scene_init(void) {
 	in_rest = true;
 
 	dynamic_text_buf = C2D_TextBufNew(DYN_TEXT_BUF_SIZE);
-	font = C2D_FontLoad("romfs:/fonts/dpcomic.bcfnt");
+	font = C2D_FontLoad("romfs:/fonts/The_Impostor.bcfnt");
 
 	init_sprites();
 	player_init();
@@ -310,7 +336,7 @@ static void draw_score(void) {
 	//dibujar texto ########################### PUNTUACION ######
 	C2D_DrawText(
 		&scoreLabel, C2D_WithColor | C2D_AtBaseline,
-		290.0f, 25.0f, DEPTH_UI_SCORE, 1.2f, 1.2f,
+		344.0f, 15.0f, DEPTH_UI_SCORE, .35f, .35f,
 		C2D_WHITE);
 }
 
@@ -338,7 +364,7 @@ static void draw_combo(void) {
 		//dibujar texto ############################## COMBO ##############
 		C2D_DrawText(
 			&comboLabel, C2D_WithColor | C2D_AtBaseline | C2D_AlignCenter,
-			200.0f, 25.0f, DEPTH_UI_COMBO, 1.0f, 1.0f,
+			200.0f, 25.0f, DEPTH_UI_COMBO, .55f, .55f,
 			color);
 	}
 }
@@ -565,7 +591,7 @@ static void draw_debug_invincibility_hint(void) {
 		C2D_TextOptimize(&invincibility_hint_label);
 		C2D_DrawText(
 			&invincibility_hint_label, C2D_WithColor | C2D_AtBaseline | C2D_AlignCenter,
-			50, 230, DEPTH_DEBUG_BASE, 0.6, 0.6,
+			50, 230, DEPTH_DEBUG_BASE, 0.5f, 0.5f,
 			C2D_BLUE);
 	}
 }
@@ -601,7 +627,7 @@ static void draw_pause(void) {
 	C2D_TextOptimize(&pauseLabel);
 	C2D_DrawText(
 		&pauseLabel, C2D_WithColor | C2D_AlignCenter,
-		TOP_SCREEN_CENTER_HOR, TOP_SCREEN_CENTER_VER - NOTE_RADIUS - 5, DEPTH_PAUSE_MENU, 1.5f, 1.5f,
+		TOP_SCREEN_CENTER_HOR, TOP_SCREEN_CENTER_VER - NOTE_RADIUS - 5, DEPTH_PAUSE_MENU, 1.0f, 1.0f,
 		C2D_WHITE);
 }
 
@@ -615,8 +641,91 @@ static void draw_failure(void) {
 	C2D_TextOptimize(&failureLabel);
 	C2D_DrawText(
 		&failureLabel, C2D_WithColor | C2D_AlignCenter,
-		TOP_SCREEN_CENTER_HOR, TOP_SCREEN_CENTER_VER - NOTE_RADIUS - 5, DEPTH_PAUSE_MENU, 1.5f, 1.5f,
+		TOP_SCREEN_CENTER_HOR, TOP_SCREEN_CENTER_VER - NOTE_RADIUS - 5, DEPTH_PAUSE_MENU, 1.2f, 1.2f,
 		C2D_RED);
+}
+
+static void draw_top_hit_popup(void) {
+	HitAssessment top_hit = logic_top_hit_assessment();
+	unsigned long time_alive = audioPlaybackPosition() - top_hit.press_position;
+	if(top_hit.valid && time_alive < HIT_EVAL_TIME_ALIVE){
+		C2D_Sprite *top_sprite = &hit_eval_sprites[1];
+		C2D_SpriteSetPos(top_sprite, HIT_EVAL_TOP_X, HIT_EVAL_TOP_Y - (time_alive * HIT_EVAL_SCROLL_SPEED));
+		switch (top_hit.valuation)
+		{
+		case HIT_VAL_PERFECT:
+			top_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 2);
+			//printf("drawing PERFECT");
+			break;
+
+		case HIT_VAL_GOOD:
+			top_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 3);
+			C2D_SpriteMove(top_sprite, -20, 0); //los sprites están centrados cuando se vería mejor alineados a la izq lmao
+			//printf("drawing GOOD");
+			break;
+
+		case HIT_VAL_OK:
+			top_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 4);
+			C2D_SpriteMove(top_sprite, -30, 0); //los sprites están centrados cuando se vería mejor alineados a la izq lmao
+			//printf("drawing OK");
+			break;
+
+		case HIT_VAL_MISS:
+			top_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 5);
+			C2D_SpriteMove(top_sprite, -20, 0); //los sprites están centrados cuando se vería mejor alineados a la izq lmao
+			//printf("drawing MISS");
+			break;
+
+		default:
+			//printf("I'm not working");
+			break;
+		}
+		C2D_DrawSprite(top_sprite);
+	}
+}
+
+static void draw_bottom_hit_popup(void) {
+	HitAssessment bot_hit = logic_bottom_hit_assessment();
+	unsigned long time_alive = audioPlaybackPosition() - bot_hit.press_position;
+	if(bot_hit.valid && time_alive < HIT_EVAL_TIME_ALIVE){
+		C2D_Sprite *bot_sprite = &hit_eval_sprites[0];
+		C2D_SpriteSetPos(bot_sprite, HIT_EVAL_BOT_X, HIT_EVAL_BOT_Y - (time_alive * HIT_EVAL_SCROLL_SPEED));
+		switch (bot_hit.valuation)
+		{
+		case HIT_VAL_PERFECT:
+			bot_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 2);
+			//printf("drawing PERFECT");
+			break;
+
+		case HIT_VAL_GOOD:
+			bot_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 3);
+			C2D_SpriteMove(bot_sprite, -20, 0); //los sprites están centrados cuando se vería mejor alineados a la izq lmao
+			//printf("drawing GOOD");
+			break;
+
+		case HIT_VAL_OK:
+			bot_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 4);
+			C2D_SpriteMove(bot_sprite, -30, 0); //los sprites están centrados cuando se vería mejor alineados a la izq lmao
+			//printf("drawing OK");
+			break;
+
+		case HIT_VAL_MISS:
+			bot_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 5);
+			C2D_SpriteMove(bot_sprite, -20, 0); //los sprites están centrados cuando se vería mejor alineados a la izq lmao
+			//printf("drawing MISS");
+			break;
+
+		default:
+			//printf("I'm not working");
+			break;
+		}
+		C2D_DrawSprite(bot_sprite);
+	}
+}
+
+static void draw_hit_popups(void) {
+	draw_top_hit_popup();
+	draw_bottom_hit_popup();
 }
 
 void scene_draw(void) {
@@ -627,6 +736,7 @@ void scene_draw(void) {
 	draw_score();
 	draw_combo();
 	draw_health();
+	draw_hit_popups();
 
 	if (logic_has_failed()) {
 		draw_failure();
