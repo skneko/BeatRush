@@ -44,7 +44,9 @@ int main(){
 	romfsInit();
 
 	/* Initialize debug subsystems */
+#ifdef DEBUG_LOG
 	init_debug_log();
+#endif
 	printf("Debug log is enabled.\n");
 
 	/* Initialize screen targets */
@@ -54,7 +56,9 @@ int main(){
 	C2D_Prepare();
 
 	top_left = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
-	consoleInit(GFX_BOTTOM, NULL); // FIXME: temporary video+console combo for debug
+#ifdef DEBUG_CONSOLE
+	consoleInit(GFX_BOTTOM, NULL);
+#endif
 
 	printf("Screen targets initialized.\n");
 
@@ -81,17 +85,4 @@ int main(){
 	gfxExit();
 
 	return EXIT_SUCCESS;
-}
-
-// FIXME: for reference, delete later
-// FIXME: modified but never called?
-void load_sprites(void) {
-	test_spritesheet = C2D_SpriteSheetLoad("romfs:/gfx/test_sprites.t3x");
-	run_char_anim = C2D_SpriteSheetLoad("romfs:/gfx/run_char_anim.t3x");
-	if (!test_spritesheet) {
-		debug_printf("Failed to load test_spritesheet spritesheet");
-	}
-	if (!run_char_anim) {
-		debug_printf("Failed to load run_char_anim spritesheet");
-	}
 }

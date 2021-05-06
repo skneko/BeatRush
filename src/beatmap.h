@@ -20,8 +20,4 @@ typedef struct _Beatmap {
 
 extern Beatmap *beatmap_load_from_file(const char *path);
 
-#ifdef DEBUG_BEATMAP
-extern void beatmap_print(const Beatmap *const beatmap);
-#endif
-
 #endif

@@ -24,7 +24,6 @@
 #define ARRAY_SIZE(x)    (sizeof(x) / sizeof((x)[0]))
 
 #include "audio.h"
-#include "debug.h"
 
 #include <3ds.h>
 #include <opusfile.h>

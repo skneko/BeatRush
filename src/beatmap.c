@@ -32,6 +32,16 @@ void load_notes(Beatmap *const map, FILE *const map_file, unsigned int note_coun
 	}
 }
 
+#ifdef DEBUG_BEATMAP
+void beatmap_print(const Beatmap *const beatmap) {
+	printf("BTRM\n\n%d\t%hu\n\n", beatmap->start_offset, beatmap->approach_time);
+	for (unsigned int i = 0; i < beatmap->note_count; i++) {
+		Note note = beatmap->notes[i];
+		printf("%lu\t%hhu\t%hhu\t%hu\n", note.position, note.type, note.topLane, note.duration);
+	}
+}
+#endif
+
 Beatmap *beatmap_load_from_file(const char *const path) {
 	FILE *map_file = fopen(path, "r");
 	if (map_file == NULL) {
@@ -65,15 +75,9 @@ Beatmap *beatmap_load_from_file(const char *const path) {
 
 	printf("Loaded beatmap from: %s (%d notes)\n", path, note_count);
 
+#ifdef DEBUG_BEATMAP
+	beatmap_print(map);
+#endif
+
 	return map;
 }
-
-#ifdef DEBUG_BEATMAP
-void beatmap_print(const Beatmap *const beatmap) {
-	printf("BTRM\n\n%d\t%hu\n\n", beatmap->start_offset, beatmap->approach_time);
-	for (int i = 0; i < beatmap->note_count; i++) {
-		Note note = beatmap->notes[i];
-		printf("%lu\t%hhu\t%hhu\t%hu\n", note.position, note.type, note.topLane, note.duration);
-	}
-}
-#endif
