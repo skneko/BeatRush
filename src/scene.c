@@ -88,6 +88,8 @@ static C2D_SpriteSheet note_sprite_sheet;
 static C2D_SpriteSheet bg_sprite_sheet;
 static C2D_SpriteSheet ui_sprite_sheet;
 
+static C2D_Font font;
+
 static int frame;
 
 static int w; //since all fg buildings have different widths I need a variable to see where to put the next sprite
@@ -198,6 +200,7 @@ void scene_init(void) {
 	in_rest = true;
 
 	dynamic_text_buf = C2D_TextBufNew(DYN_TEXT_BUF_SIZE);
+	font = C2D_FontLoad("romfs:/fonts/dpcomic.bcfnt");
 
 	init_sprites();
 	player_init();
@@ -211,6 +214,7 @@ void scene_end(void) {
 	
 	player_end();
 
+	C2D_FontFree(font);
 	C2D_TextBufDelete(dynamic_text_buf);
 }
 
@@ -301,12 +305,12 @@ static void draw_score(void) {
 
 	C2D_TextBufClear(dynamic_text_buf);
 	snprintf(buf, sizeof(buf), "%06lu", score);
-	C2D_TextParse(&scoreLabel, dynamic_text_buf, buf);
+	C2D_TextFontParse(&scoreLabel, font, dynamic_text_buf, buf);
 	C2D_TextOptimize(&scoreLabel);
 	//dibujar texto ########################### PUNTUACION ######
 	C2D_DrawText(
 		&scoreLabel, C2D_WithColor | C2D_AtBaseline,
-		290.0f, 25.0f, DEPTH_UI_SCORE, 0.8f, 0.8f,
+		290.0f, 25.0f, DEPTH_UI_SCORE, 1.2f, 1.2f,
 		C2D_WHITE);
 }
 
@@ -329,7 +333,7 @@ static void draw_combo(void) {
 	if (combo > COMBO_DRAW_THRESHOLD) {
 		C2D_TextBufClear(dynamic_text_buf);
 		snprintf(buf, sizeof(buf), "%u", combo);
-		C2D_TextParse(&comboLabel, dynamic_text_buf, buf);
+		C2D_TextFontParse(&comboLabel, font, dynamic_text_buf, buf);
 		C2D_TextOptimize(&comboLabel);
 		//dibujar texto ############################## COMBO ##############
 		C2D_DrawText(
@@ -393,7 +397,7 @@ static void draw_attention_cues(void) {
 				snprintf(buf, sizeof(buf), "%0.3f", time_until_next / 1000.0f);
 			}
 
-			C2D_TextParse(&restTimeLabel, dynamic_text_buf, buf);
+			C2D_TextFontParse(&restTimeLabel, font, dynamic_text_buf, buf);
 			C2D_TextOptimize(&restTimeLabel);
 			C2D_DrawText(
 				&restTimeLabel, C2D_WithColor | C2D_AtBaseline,
@@ -593,7 +597,7 @@ static void draw_pause(void) {
 
 	C2D_TextBufClear(dynamic_text_buf);
 	snprintf(buf, sizeof(buf), "PAUSE");
-	C2D_TextParse(&pauseLabel, dynamic_text_buf, buf);
+	C2D_TextFontParse(&pauseLabel, font, dynamic_text_buf, buf);
 	C2D_TextOptimize(&pauseLabel);
 	C2D_DrawText(
 		&pauseLabel, C2D_WithColor | C2D_AlignCenter,
@@ -607,7 +611,7 @@ static void draw_failure(void) {
 
 	C2D_TextBufClear(dynamic_text_buf);
 	snprintf(buf, sizeof(buf), "GAME OVER");
-	C2D_TextParse(&failureLabel, dynamic_text_buf, buf);
+	C2D_TextFontParse(&failureLabel, font, dynamic_text_buf, buf);
 	C2D_TextOptimize(&failureLabel);
 	C2D_DrawText(
 		&failureLabel, C2D_WithColor | C2D_AlignCenter,
