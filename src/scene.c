@@ -435,7 +435,7 @@ static void draw_attention_cues(void) {
 			C2D_TextOptimize(&restTimeLabel);
 			C2D_DrawText(
 				&restTimeLabel, C2D_WithColor | C2D_AtBaseline,
-				TOP_SCREEN_CENTER_HOR - 20, TOP_SCREEN_CENTER_VER + 5, DEPTH_UI_OVER, 0.5f, 0.5f,
+				TOP_SCREEN_CENTER_HOR - 40, TOP_SCREEN_CENTER_VER + 5, DEPTH_UI_OVER, 0.5f, 0.5f,
 				C2D_WHITE);
 		}
 	}
