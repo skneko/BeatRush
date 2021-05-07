@@ -49,6 +49,7 @@
 #define MAX_NOTE_SPRITES             50
 #define MAX_BG_SPRITES               35
 #define MAX_HIT_EVAL_SPRITES         2 //0	-	DOWN,	1	-	UP
+#define MAX_BULLSEYE_SPRITES         2 //0	-	DOWN,	1	-	UP
 #define MAX_HEART_ICONS				 2
 
 //bg_buildings
@@ -93,6 +94,7 @@ static C2D_Sprite char_sprites[MAX_CHAR_SPRITES];
 static C2D_Sprite note_sprites[MAX_NOTE_SPRITES];
 static C2D_Sprite bg_sprites[MAX_BG_SPRITES];
 static C2D_Sprite hit_eval_sprites[MAX_HIT_EVAL_SPRITES];
+static C2D_Sprite bullseye_sprites[MAX_BULLSEYE_SPRITES];
 static C2D_Image heart_icons[MAX_HEART_ICONS];
 
 static C2D_SpriteSheet char_sprite_sheet;
@@ -195,6 +197,19 @@ static void init_sprites(void) {
 	C2D_Sprite *top_eval_sprite = &hit_eval_sprites[1];
 	C2D_SpriteFromSheet(top_eval_sprite, ui_sprite_sheet, 2);
 	C2D_SpriteSetDepth(top_eval_sprite, DEPTH_UI_SCORE);
+
+	//bullseye
+	C2D_Sprite *bot_bullseye_sprite = &bullseye_sprites[0];
+	C2D_SpriteFromSheet(bot_bullseye_sprite, ui_sprite_sheet, 7);
+	C2D_SpriteSetCenter(bot_bullseye_sprite, .5f, .5f);
+	C2D_SpriteSetPos(bot_bullseye_sprite, HITLINE_LEFT_MARGIN, TOP_SCREEN_HEIGHT - LANE_BOTTOM_MARGIN - LANE_HEIGHT / 2);
+	C2D_SpriteSetDepth(bot_bullseye_sprite, DEPTH_UI_SCORE);
+
+	C2D_Sprite *top_bullseye_sprite = &bullseye_sprites[1];
+	C2D_SpriteFromSheet(top_bullseye_sprite, ui_sprite_sheet, 6);
+	C2D_SpriteSetCenter(top_bullseye_sprite, .5f, .5f);
+	C2D_SpriteSetPos(top_bullseye_sprite, HITLINE_LEFT_MARGIN, LANE_TOP_MARGIN + LANE_HEIGHT / 2);
+	C2D_SpriteSetDepth(top_bullseye_sprite, DEPTH_UI_SCORE);
 }
 
 void scene_init(void) {
@@ -529,17 +544,14 @@ static void draw_hit_popup(HitAssessment hit, C2D_Sprite *sprite, float x, float
 
 		case HIT_VAL_GOOD:
 			sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 3);
-			C2D_SpriteMove(sprite, -20, 0); //los sprites están centrados cuando se vería mejor alineados a la izq lmao
 			break;
 
 		case HIT_VAL_OK:
 			sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 4);
-			C2D_SpriteMove(sprite, -30, 0); //los sprites están centrados cuando se vería mejor alineados a la izq lmao
 			break;
 
 		case HIT_VAL_MISS:
 			sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 5);
-			C2D_SpriteMove(sprite, -20, 0); //los sprites están centrados cuando se vería mejor alineados a la izq lmao
 			break;
 
 		default:
@@ -555,6 +567,14 @@ static void draw_hit_popups(void) {
 		HIT_EVAL_TOP_X, HIT_EVAL_TOP_Y);
 	draw_hit_popup(logic_bottom_hit_assessment(), &hit_eval_sprites[IDX_HIT_EVAL_BOTTOM], 
 		HIT_EVAL_BOTTOM_X, HIT_EVAL_BOTTOM_Y);
+}
+
+static void draw_bullseyes(void){
+	C2D_Sprite *bot_bullseye_sprite = &bullseye_sprites[0];
+	C2D_DrawSprite(bot_bullseye_sprite);
+
+	C2D_Sprite *top_bullseye_sprite = &bullseye_sprites[1];
+	C2D_DrawSprite(top_bullseye_sprite);
 }
 
 #ifdef DEBUG_OVERLAY
@@ -682,6 +702,7 @@ void scene_draw(void) {
 	draw_combo();
 	draw_health();
 	draw_hit_popups();
+	draw_bullseyes();
 
 	if (logic_has_failed()) {
 		draw_failure();
