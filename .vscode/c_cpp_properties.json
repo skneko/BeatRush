@@ -14,7 +14,15 @@
                 "${DEVKITPRO}/portlibs/3ds/include/**"
             ],
             "defines": [
-                "DEBUG_ALL"
+                "DEBUG_BEATMAP",
+                "DEBUG_CONSOLE",
+                "DEBUG_OVERLAY",
+                "DEBUG_DIRECTOR",
+                "DEBUG_PLAYER",
+                "DEBUG_AUDIO",
+                "DEBUG_LOG",
+                "DEBUG_NOTE_DRAWING",
+                "DEBUG_AUTO"
             ],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "gnu99",
