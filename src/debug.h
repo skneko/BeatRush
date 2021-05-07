@@ -10,7 +10,7 @@
 //  DEBUG_DIRECTOR          Verbose game director
 //  DEBUG_PLAYER            Verbose player state machine
 //  DEBUG_AUDIO             Verbose audio player
-//  DEBUG_LOG               Write output to a log file in the ROMFS
+//  DEBUG_LOG               Write output to a log file in the SDMC
 //  DEBUG_NOTE_DRAWING      Verbose note drawing loop
 //  DEBUG_AUTO              AI plays the game automatically and perfectly
 
