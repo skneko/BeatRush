@@ -577,6 +577,17 @@ static void draw_bullseyes(void){
 	C2D_DrawSprite(top_bullseye_sprite);
 }
 
+static void draw_progress_bar(void) {
+	float progress = (float)audioPlaybackPosition() / audioLength();
+	
+	u32 color = C2D_Color32(128, 128, 128, 128);
+	C2D_DrawRectangle(
+		0, TOP_SCREEN_HEIGHT - 3,
+		DEPTH_UI_OVER,
+		TOP_SCREEN_WIDTH * progress, 3,
+		color, color, color, color);
+}
+
 #ifdef DEBUG_OVERLAY
 static void draw_debug_song_time(void) {
 	C2D_Text song_time_label;
@@ -588,15 +599,6 @@ static void draw_debug_song_time(void) {
 		&song_time_label, C2D_WithColor | C2D_AtBaseline,
 		230.0f, 220.0f, DEPTH_DEBUG_BASE, 0.5f, 0.5f,
 		C2D_WHITE);
-}
-
-static void draw_debug_progress_bar(void) {
-	float progress = (float)audioPlaybackPosition() / audioLength();
-	C2D_DrawRectangle(
-		0, TOP_SCREEN_HEIGHT - 3.0f,
-		DEPTH_DEBUG_BASE,
-		TOP_SCREEN_WIDTH * progress, 3.0f,
-		C2D_RED, C2D_RED, C2D_RED, C2D_RED);
 }
 
 static void draw_debug_rulers(void) {
@@ -671,7 +673,6 @@ static void draw_debug_keypress_hints(void) {
 
 static void draw_debug_overlay(void) {
 	draw_debug_song_time();
-	draw_debug_progress_bar();
 
 	draw_debug_rulers();
 
@@ -703,6 +704,7 @@ void scene_draw(void) {
 	draw_health();
 	draw_hit_popups();
 	draw_bullseyes();
+	draw_progress_bar();
 
 	if (logic_has_failed()) {
 		draw_failure();
