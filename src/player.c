@@ -60,7 +60,9 @@ Lane player_current_lane(void) {
 }
 
 static inline void do_run(void) {
+#ifdef DEBUG_PLAYER
     printf("Player: state (%d) -> RUNNING (%d)\n", state, PLAYER_STATE_RUNNING);
+#endif
 
     state = PLAYER_STATE_RUNNING;
     player_position = 1;
@@ -70,7 +72,9 @@ static inline void do_run(void) {
 }
 
 static inline void do_float(void) {
+#ifdef DEBUG_PLAYER
     printf("Player: state (%d) -> FLOATING (%d)\n", state, PLAYER_STATE_FLOATING);
+#endif
 
     state = PLAYER_STATE_FLOATING;
     player_position = 0;
@@ -80,7 +84,9 @@ static inline void do_float(void) {
 }
 
 static inline void do_hit(void) {
+#ifdef DEBUG_PLAYER
     printf("Player: state (%d) -> HITTING (%d)\n", state, PLAYER_STATE_HITTING);
+#endif
 
     state = PLAYER_STATE_HITTING;
 
@@ -90,7 +96,9 @@ static inline void do_hit(void) {
 }
 
 static inline void do_jump(void) {
+#ifdef DEBUG_PLAYER
     printf("Player: state (%d) -> JUMPING (%d)\n", state, PLAYER_STATE_JUMPING);
+#endif
 
     current_lane = LANE_TRANSITIONING;
     state = PLAYER_STATE_JUMPING;
@@ -100,7 +108,9 @@ static inline void do_jump(void) {
 }
 
 static inline void do_quick_jump(void) {
+#ifdef DEBUG_PLAYER
     printf("Player: state (%d) -> QUICK JUMP ...\n", state);
+#endif
 
     do_jump();
 
@@ -109,7 +119,9 @@ static inline void do_quick_jump(void) {
 }
 
 static inline void do_fall(void) {
+#ifdef DEBUG_PLAYER
     printf("Player: state (%d) -> FALLING (%d)\n", state, PLAYER_STATE_FALLING);
+#endif
 
     current_lane = LANE_TRANSITIONING;
     state = PLAYER_STATE_FALLING;
@@ -119,7 +131,9 @@ static inline void do_fall(void) {
 }
 
 static inline void do_quick_fall(void) {
+#ifdef DEBUG_PLAYER
     printf("Player: state (%d) -> QUICK FALL ...\n", state);
+#endif
 
     do_fall();
 

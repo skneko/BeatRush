@@ -44,7 +44,9 @@ void director_end(void) {
 }
 
 void director_change_state(GameState next_state) {
+#ifdef DEBUG_DIRECTOR
     printf("Director: state change requested from %d to %d\n", state, next_state);
+#endif
 
 	previous_end = end;
 	state_change_requested = true;
@@ -83,7 +85,9 @@ bool director_main_loop(void){
 	}
 
 	if (state_change_requested) {
+#ifdef DEBUG_DIRECTOR
         printf("Director: changing state to %d\n", state);
+#endif
 		previous_end();
 		init();
 		state_change_requested = false;

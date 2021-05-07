@@ -276,19 +276,21 @@ static NoteDrawingResult draw_note(const Note *const note, int noteId) {
 		C2D_SpriteSetPos(note_sprite, floor(note_x), floor(lane_y));
 		note_sprite->image = C2D_SpriteSheetGetImage(note_sprite_sheet, (frame % 24 < 12) ? offset : offset + 1); //animate
 		C2D_DrawSprite(note_sprite);
-		//C2D_DrawCircleSolid(
-		//    note_x, lane_y, DEBUG_DEPTH, NOTE_RADIUS,
-		//    C2D_PURPLE);
+
+#ifdef DEBUG_OVERLAY
 		C2D_DrawLine(note_x, lane_y - NOTE_RADIUS, C2D_RED,
 					 note_x, lane_y + NOTE_RADIUS, C2D_RED,
 					 3.0f, DEPTH_DEBUG_BASE);
+#endif
 	}
 
 	return NOTE_DRAWN;
 }
 
 static void draw_notes(void) {
-	//printf("----------- %u\n", remaining_notes_to_draw);
+#ifdef DEBUG_NOTE_DRAWING
+	printf("----------- %u\n", remaining_notes_to_draw);
+#endif
 
 	Note *note_to_draw = next_note_to_draw;
 	unsigned int remaining_notes_temp = remaining_notes_to_draw;
@@ -298,20 +300,26 @@ static void draw_notes(void) {
 	while (keep_advancing && remaining_notes_temp > 0) {
 		switch (draw_note(note_to_draw, i)) {
 		case NOTE_BEHIND: {
-			//printf("Left behind note at %lums.\n", note_to_draw->position);
+#ifdef DEBUG_NOTE_DRAWING
+			printf("Left behind note at %lums.\n", note_to_draw->position);
+#endif
 			remaining_notes_to_draw--;
 			next_note_to_draw++;
 			break;
 		}
 
 		case NOTE_DRAWN: {
-			//printf("Drawn note at %lums.\n", note_to_draw->position);
+#ifdef DEBUG_NOTE_DRAWING
+			printf("Drawn note at %lums.\n", note_to_draw->position);
+#endif
 			break;
 		}
 
 		default:
 		case NOTE_AHEAD: {
-			//printf("Found note ahead at %lums, stop.\n", note_to_draw->position);
+#ifdef DEBUG_NOTE_DRAWING
+			printf("Found note ahead at %lums, stop.\n", note_to_draw->position);
+#endif
 			keep_advancing = false;
 			break;
 		}
@@ -512,6 +520,35 @@ static void draw_bg_sprites(void){
 	frame += 1;
 }
 
+static void draw_pause(void) {
+	C2D_Text pauseLabel;
+	char buf[PAUSE_LABEL_BUF_SIZE];
+
+	C2D_TextBufClear(dynamic_text_buf);
+	snprintf(buf, sizeof(buf), "PAUSE");
+	C2D_TextFontParse(&pauseLabel, font, dynamic_text_buf, buf);
+	C2D_TextOptimize(&pauseLabel);
+	C2D_DrawText(
+		&pauseLabel, C2D_WithColor | C2D_AlignCenter,
+		TOP_SCREEN_CENTER_HOR, TOP_SCREEN_CENTER_VER - NOTE_RADIUS - 5, DEPTH_PAUSE_MENU, 1.5f, 1.5f,
+		C2D_WHITE);
+}
+
+static void draw_failure(void) {
+	C2D_Text failureLabel;
+	char buf[10];
+
+	C2D_TextBufClear(dynamic_text_buf);
+	snprintf(buf, sizeof(buf), "GAME OVER");
+	C2D_TextFontParse(&failureLabel, font, dynamic_text_buf, buf);
+	C2D_TextOptimize(&failureLabel);
+	C2D_DrawText(
+		&failureLabel, C2D_WithColor | C2D_AlignCenter,
+		TOP_SCREEN_CENTER_HOR, TOP_SCREEN_CENTER_VER - NOTE_RADIUS - 5, DEPTH_PAUSE_MENU, 1.5f, 1.5f,
+		C2D_RED);
+}
+
+#ifdef DEBUG_OVERLAY
 static void draw_debug_song_time(void) {
 	C2D_Text songTimeLabel;
 	char buf[10];
@@ -616,34 +653,7 @@ static void draw_debug_overlay(void) {
 	draw_debug_keypress_hints();
 	draw_debug_invincibility_hint();
 }
-
-static void draw_pause(void) {
-	C2D_Text pauseLabel;
-	char buf[PAUSE_LABEL_BUF_SIZE];
-
-	C2D_TextBufClear(dynamic_text_buf);
-	snprintf(buf, sizeof(buf), "PAUSE");
-	C2D_TextFontParse(&pauseLabel, font, dynamic_text_buf, buf);
-	C2D_TextOptimize(&pauseLabel);
-	C2D_DrawText(
-		&pauseLabel, C2D_WithColor | C2D_AlignCenter,
-		TOP_SCREEN_CENTER_HOR, TOP_SCREEN_CENTER_VER - NOTE_RADIUS - 5, DEPTH_PAUSE_MENU, 1.0f, 1.0f,
-		C2D_WHITE);
-}
-
-static void draw_failure(void) {
-	C2D_Text failureLabel;
-	char buf[10];
-
-	C2D_TextBufClear(dynamic_text_buf);
-	snprintf(buf, sizeof(buf), "GAME OVER");
-	C2D_TextFontParse(&failureLabel, font, dynamic_text_buf, buf);
-	C2D_TextOptimize(&failureLabel);
-	C2D_DrawText(
-		&failureLabel, C2D_WithColor | C2D_AlignCenter,
-		TOP_SCREEN_CENTER_HOR, TOP_SCREEN_CENTER_VER - NOTE_RADIUS - 5, DEPTH_PAUSE_MENU, 1.2f, 1.2f,
-		C2D_RED);
-}
+#endif
 
 static void draw_top_hit_popup(void) {
 	HitAssessment top_hit = logic_top_hit_assessment();
@@ -746,5 +756,7 @@ void scene_draw(void) {
 
 	draw_attention_cues();
 
+#ifdef DEBUG_OVERLAY
 	draw_debug_overlay();
+#endif
 }
