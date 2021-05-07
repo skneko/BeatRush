@@ -343,8 +343,8 @@ static void draw_score(void) {
 	C2D_TextOptimize(&scoreLabel);
 	//dibujar texto ########################### PUNTUACION ######
 	C2D_DrawText(
-		&scoreLabel, C2D_WithColor | C2D_AtBaseline,
-		344.0f, 15.0f, DEPTH_UI_SCORE, .35f, .35f,
+		&scoreLabel, C2D_WithColor | C2D_AtBaseline | C2D_AlignRight,
+		390, 15, DEPTH_UI_SCORE, .35f, .35f,
 		C2D_WHITE);
 }
 
@@ -434,8 +434,8 @@ static void draw_attention_cues(void) {
 			C2D_TextFontParse(&restTimeLabel, font, dynamic_text_buf, buf);
 			C2D_TextOptimize(&restTimeLabel);
 			C2D_DrawText(
-				&restTimeLabel, C2D_WithColor | C2D_AtBaseline,
-				TOP_SCREEN_CENTER_HOR - 40, TOP_SCREEN_CENTER_VER + 5, DEPTH_UI_OVER, 0.5f, 0.5f,
+				&restTimeLabel, C2D_WithColor | C2D_AtBaseline | C2D_AlignCenter,
+				TOP_SCREEN_CENTER_HOR, TOP_SCREEN_CENTER_VER + 5, DEPTH_UI_OVER, 0.5f, 0.5f,
 				C2D_WHITE);
 		}
 	}
