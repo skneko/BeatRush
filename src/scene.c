@@ -629,6 +629,21 @@ static void draw_debug_overlay(void) {
 }
 #endif
 
+#ifdef DEBUG_AUTO
+static void draw_debug_auto_hint(void) {
+	C2D_Text auto_hint_label;
+
+	const char *message = "AUTO";
+	C2D_TextBufClear(dynamic_text_buf);
+	C2D_TextParse(&auto_hint_label, dynamic_text_buf, message);
+	C2D_TextOptimize(&auto_hint_label);
+	C2D_DrawText(
+		&auto_hint_label, C2D_WithColor | C2D_AtBaseline | C2D_AlignCenter,
+		TOP_SCREEN_CENTER_HOR, 50, DEPTH_DEBUG_BASE, 0.6, 0.6,
+		C2D_RED);
+}
+#endif
+
 void scene_draw(void) {
 	draw_bg_sprites();
 	draw_notes();
@@ -648,5 +663,9 @@ void scene_draw(void) {
 
 #ifdef DEBUG_OVERLAY
 	draw_debug_overlay();
+#endif
+
+#ifdef DEBUG_AUTO
+	draw_debug_auto_hint();
 #endif
 }

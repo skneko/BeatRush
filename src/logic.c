@@ -273,12 +273,22 @@ void logic_update(unsigned int dt) {
 		audioPause();
 	}
 
+#ifdef DEBUG_AUTO
+	if (saturated_sub_lu(next_note_to_hit->position, audioPlaybackPosition()) <= HIT_WINDOW_PERFECT) {
+		if (next_note_to_hit->topLane) {
+			action_up();
+		} else {
+			action_down();
+		}
+	}
+#else
 	if (k_down & KEY_A || k_down & KEY_B) {
 		action_down();
 	}
 	if (k_down & KEY_X || k_down & KEY_Y) {
 		action_up();
 	}
+#endif
 }
 
 unsigned long logic_score(void) {
