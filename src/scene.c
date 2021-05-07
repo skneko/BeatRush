@@ -72,10 +72,12 @@
 #define HEART_ICON_STRIDE			 20
 
 // hit evaluation
+#define IDX_HIT_EVAL_TOP			 1
+#define IDX_HIT_EVAL_BOTTOM			 0
 #define HIT_EVAL_TIME_ALIVE			 300
-#define HIT_EVAL_SCROLL_SPEED		 0.05f
-#define HIT_EVAL_BOT_X				 10
-#define HIT_EVAL_BOT_Y 				 120
+#define HIT_EVAL_SCROLL_SPEED		 0.05
+#define HIT_EVAL_BOTTOM_X			 10
+#define HIT_EVAL_BOTTOM_Y 			 120
 #define HIT_EVAL_TOP_X				 10
 #define HIT_EVAL_TOP_Y				 20
 
@@ -514,77 +516,45 @@ static void draw_failure(void) {
 		C2D_RED);
 }
 
-static void draw_top_hit_popup(void) {
-	HitAssessment top_hit = logic_top_hit_assessment();
-	unsigned long time_alive = audioPlaybackPosition() - top_hit.press_position;
-	if(top_hit.valid && time_alive < HIT_EVAL_TIME_ALIVE){
-		C2D_Sprite *top_sprite = &hit_eval_sprites[1];
-		C2D_SpriteSetPos(top_sprite, HIT_EVAL_TOP_X, HIT_EVAL_TOP_Y - (time_alive * HIT_EVAL_SCROLL_SPEED));
-		switch (top_hit.valuation)
+static void draw_hit_popup(HitAssessment hit, C2D_Sprite *sprite, float x, float y) {
+	unsigned long time_alive = audioPlaybackPosition() - hit.press_position;
+	if(hit.valid && time_alive < HIT_EVAL_TIME_ALIVE){
+		C2D_SpriteSetPos(sprite, x, y - (time_alive * HIT_EVAL_SCROLL_SPEED));
+
+		switch (hit.valuation)
 		{
 		case HIT_VAL_PERFECT:
-			top_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 2);
+			sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 2);
 			break;
 
 		case HIT_VAL_GOOD:
-			top_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 3);
-			C2D_SpriteMove(top_sprite, -20, 0); //los sprites están centrados cuando se vería mejor alineados a la izq lmao
+			sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 3);
+			C2D_SpriteMove(sprite, -20, 0); //los sprites están centrados cuando se vería mejor alineados a la izq lmao
 			break;
 
 		case HIT_VAL_OK:
-			top_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 4);
-			C2D_SpriteMove(top_sprite, -30, 0); //los sprites están centrados cuando se vería mejor alineados a la izq lmao
+			sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 4);
+			C2D_SpriteMove(sprite, -30, 0); //los sprites están centrados cuando se vería mejor alineados a la izq lmao
 			break;
 
 		case HIT_VAL_MISS:
-			top_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 5);
-			C2D_SpriteMove(top_sprite, -20, 0); //los sprites están centrados cuando se vería mejor alineados a la izq lmao
+			sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 5);
+			C2D_SpriteMove(sprite, -20, 0); //los sprites están centrados cuando se vería mejor alineados a la izq lmao
 			break;
 
 		default:
 			break;
 		}
-		C2D_DrawSprite(top_sprite);
-	}
-}
 
-static void draw_bottom_hit_popup(void) {
-	HitAssessment bot_hit = logic_bottom_hit_assessment();
-	unsigned long time_alive = audioPlaybackPosition() - bot_hit.press_position;
-	if(bot_hit.valid && time_alive < HIT_EVAL_TIME_ALIVE){
-		C2D_Sprite *bot_sprite = &hit_eval_sprites[0];
-		C2D_SpriteSetPos(bot_sprite, HIT_EVAL_BOT_X, HIT_EVAL_BOT_Y - (time_alive * HIT_EVAL_SCROLL_SPEED));
-		switch (bot_hit.valuation)
-		{
-		case HIT_VAL_PERFECT:
-			bot_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 2);
-			break;
-
-		case HIT_VAL_GOOD:
-			bot_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 3);
-			C2D_SpriteMove(bot_sprite, -20, 0);
-			break;
-
-		case HIT_VAL_OK:
-			bot_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 4);
-			C2D_SpriteMove(bot_sprite, -30, 0);
-			break;
-
-		case HIT_VAL_MISS:
-			bot_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 5);
-			C2D_SpriteMove(bot_sprite, -20, 0);
-			break;
-
-		default:
-			break;
-		}
-		C2D_DrawSprite(bot_sprite);
+		C2D_DrawSprite(sprite);
 	}
 }
 
 static void draw_hit_popups(void) {
-	draw_top_hit_popup();
-	draw_bottom_hit_popup();
+	draw_hit_popup(logic_top_hit_assessment(), &hit_eval_sprites[IDX_HIT_EVAL_TOP], 
+		HIT_EVAL_TOP_X, HIT_EVAL_TOP_Y);
+	draw_hit_popup(logic_bottom_hit_assessment(), &hit_eval_sprites[IDX_HIT_EVAL_BOTTOM], 
+		HIT_EVAL_BOTTOM_X, HIT_EVAL_BOTTOM_Y);
 }
 
 #ifdef DEBUG_OVERLAY
