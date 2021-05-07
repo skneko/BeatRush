@@ -49,6 +49,7 @@
 #define MAX_NOTE_SPRITES             50
 #define MAX_BG_SPRITES               35
 #define MAX_HIT_EVAL_SPRITES         2 //0	-	DOWN,	1	-	UP
+#define MAX_BULLSEYE_SPRITES         2 //0	-	DOWN,	1	-	UP
 #define MAX_HEART_ICONS				 2
 
 //bg_buildings
@@ -91,6 +92,7 @@ static C2D_Sprite char_sprites[MAX_CHAR_SPRITES];
 static C2D_Sprite note_sprites[MAX_NOTE_SPRITES];
 static C2D_Sprite bg_sprites[MAX_BG_SPRITES];
 static C2D_Sprite hit_eval_sprites[MAX_HIT_EVAL_SPRITES];
+static C2D_Sprite bullseye_sprites[MAX_BULLSEYE_SPRITES];
 static C2D_Image heart_icons[MAX_HEART_ICONS];
 
 static C2D_SpriteSheet char_sprite_sheet;
@@ -204,6 +206,19 @@ static void init_sprites(void) {
 	C2D_Sprite *top_eval_sprite = &hit_eval_sprites[1];
 	C2D_SpriteFromSheet(top_eval_sprite, ui_sprite_sheet, 2);
 	C2D_SpriteSetDepth(top_eval_sprite, DEPTH_UI_SCORE);
+
+	//bullseye
+	C2D_Sprite *bot_bullseye_sprite = &bullseye_sprites[0];
+	C2D_SpriteFromSheet(bot_bullseye_sprite, ui_sprite_sheet, 7);
+	C2D_SpriteSetCenter(bot_bullseye_sprite, .5f, .5f);
+	C2D_SpriteSetPos(bot_bullseye_sprite, HITLINE_LEFT_MARGIN, TOP_SCREEN_HEIGHT - LANE_BOTTOM_MARGIN - LANE_HEIGHT / 2);
+	C2D_SpriteSetDepth(bot_bullseye_sprite, DEPTH_UI_SCORE);
+
+	C2D_Sprite *top_bullseye_sprite = &bullseye_sprites[1];
+	C2D_SpriteFromSheet(top_bullseye_sprite, ui_sprite_sheet, 6);
+	C2D_SpriteSetCenter(top_bullseye_sprite, .5f, .5f);
+	C2D_SpriteSetPos(top_bullseye_sprite, HITLINE_LEFT_MARGIN, LANE_TOP_MARGIN + LANE_HEIGHT / 2);
+	C2D_SpriteSetDepth(top_bullseye_sprite, DEPTH_UI_SCORE);
 }
 
 void scene_init(void) {
@@ -608,6 +623,14 @@ static void draw_hit_popups(void) {
 	draw_bottom_hit_popup();
 }
 
+static void draw_bullseyes(void){
+	C2D_Sprite *bot_bullseye_sprite = &bullseye_sprites[0];
+	C2D_DrawSprite(bot_bullseye_sprite);
+
+	C2D_Sprite *top_bullseye_sprite = &bullseye_sprites[1];
+	C2D_DrawSprite(top_bullseye_sprite);
+}
+
 #ifdef DEBUG_OVERLAY
 static void draw_debug_song_time(void) {
 	C2D_Text songTimeLabel;
@@ -739,6 +762,7 @@ void scene_draw(void) {
 	draw_combo();
 	draw_health();
 	draw_hit_popups();
+	draw_bullseyes();
 
 	if (logic_has_failed()) {
 		draw_failure();
