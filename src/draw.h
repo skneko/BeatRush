@@ -16,4 +16,15 @@ inline bool flicker_is_visible(long long time, int period, int visible) {
     return (time % period) < visible;
 }
 
+inline C2D_SpriteSheet load_sprite_sheet(const char *path) {
+	C2D_SpriteSheet sheet = C2D_SpriteSheetLoad(path);
+
+	if (!sheet) {
+		printf("Failed to load sprite sheet: %s", path);
+		svcBreak(USERBREAK_PANIC);
+	}
+
+	return sheet;
+}
+
 #endif

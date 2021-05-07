@@ -107,17 +107,6 @@ static int bird_dir;
 
 static C2D_TextBuf dynamic_text_buf;
 
-static C2D_SpriteSheet load_sprite_sheet(const char *path) {
-	C2D_SpriteSheet sheet = C2D_SpriteSheetLoad(path);
-
-	if (!sheet) {
-		printf("Failed to load sprite sheet: %s", path);
-		svcBreak(USERBREAK_PANIC);
-	}
-
-	return sheet;
-}
-
 static void init_sprites(void) {
 //load sheets from gfx
 	char_sprite_sheet = load_sprite_sheet("romfs:/gfx/run_char_anim.t3x");
