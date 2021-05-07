@@ -45,9 +45,9 @@
 #define ATTENTION_WARN_VISIBLE       100
 
 // *** SPRITES ***
-#define MAX_CHAR_SPRITES             1 //SUGGESTIVE     ###- NOT FINAL -###
-#define MAX_NOTE_SPRITES             50 //SUGGESTIVE     ###- NOT FINAL -###
-#define MAX_BG_SPRITES               35 //SUGGESTIVE     ###- NOT FINAL -###
+#define MAX_CHAR_SPRITES             1
+#define MAX_NOTE_SPRITES             50
+#define MAX_BG_SPRITES               35
 #define MAX_HIT_EVAL_SPRITES         2 //0	-	DOWN,	1	-	UP
 #define MAX_HEART_ICONS				 2
 
@@ -120,9 +120,9 @@ static C2D_SpriteSheet load_sprite_sheet(const char *path) {
 
 static void init_sprites(void) {
 //load sheets from gfx
-	char_sprite_sheet = load_sprite_sheet("romfs:/gfx/run_char_anim.t3x"); //char
-	note_sprite_sheet = load_sprite_sheet("romfs:/gfx/note.t3x"); //note  ### TO DRAW ###
-	bg_sprite_sheet = load_sprite_sheet("romfs:/gfx/bg.t3x"); //bg        ### TO DRAW ###
+	char_sprite_sheet = load_sprite_sheet("romfs:/gfx/run_char_anim.t3x");
+	note_sprite_sheet = load_sprite_sheet("romfs:/gfx/note.t3x");
+	bg_sprite_sheet = load_sprite_sheet("romfs:/gfx/bg.t3x");
 	ui_sprite_sheet = load_sprite_sheet("romfs:/gfx/ui.t3x");
 
 	//------------------------------------------------------------------------------------------------
@@ -131,7 +131,6 @@ static void init_sprites(void) {
 	C2D_SpriteFromSheet(player_sprite, char_sprite_sheet, 0);
 	C2D_SpriteSetCenter(player_sprite, .5f, .5f);
 	C2D_SpriteSetDepth(player_sprite, DEPTH_PLAYER);
-	//C2D_SpriteScale(player_sprite, 1, 1);
 
 	//------------------------------------------------------------------------------------------------
 	//init bg sprite to default state (lmao OK)
@@ -160,7 +159,7 @@ static void init_sprites(void) {
 		w += fg_building_sprite->params.pos.w + FG_DISTANCE_BW_BUILDINGS;
 	}
 
-	//road TEMPORARY!!!!
+	//road
 	C2D_Sprite *road = &bg_sprites[29];
 	C2D_SpriteFromSheet(road, bg_sprite_sheet, 5);
 	C2D_SpriteScale(road, 1, .7f);
@@ -172,14 +171,12 @@ static void init_sprites(void) {
 	C2D_Sprite *birdo = &bg_sprites[30];
 	C2D_SpriteFromSheet(birdo, bg_sprite_sheet, 6);
 	C2D_SpriteSetCenter(birdo, .5f, .5f);
-	//C2D_SpriteScale(birdo, 5, 5); //I put this here for debugging, the sprite is crazy small
 	C2D_SpriteSetPos(birdo, 310, 50);
 	C2D_SpriteSetDepth(birdo, DEPTH_DECOR_BIRDS);
 
 	C2D_Sprite *birdo_2 = &bg_sprites[31];
 	C2D_SpriteFromSheet(birdo_2, bg_sprite_sheet, 6);
 	C2D_SpriteSetCenter(birdo_2, .5f, .5f);
-	//C2D_SpriteScale(birdo, 5, 5); //I put this here for debugging, the sprite is crazy small
 	C2D_SpriteSetPos(birdo_2, 318, 55);
 	C2D_SpriteSetDepth(birdo_2, DEPTH_DECOR_BIRDS);
 	bird_dir = -1;
@@ -202,16 +199,10 @@ static void init_sprites(void) {
 	//hit evals
 	C2D_Sprite *bot_eval_sprite = &hit_eval_sprites[0];
 	C2D_SpriteFromSheet(bot_eval_sprite, ui_sprite_sheet, 2);
-	//C2D_SpriteSetCenter(bot_eval_sprite, .5f, .5f);
-	//C2D_SpriteSetPos(bot_eval_sprite, TOP_SCREEN_CENTER_HOR, TOP_SCREEN_CENTER_VER);
-	//C2D_SpriteScale(bot_eval_sprite, 0.6f, 0.6f);
 	C2D_SpriteSetDepth(bot_eval_sprite, DEPTH_UI_SCORE);
 
 	C2D_Sprite *top_eval_sprite = &hit_eval_sprites[1];
 	C2D_SpriteFromSheet(top_eval_sprite, ui_sprite_sheet, 2);
-	//C2D_SpriteSetCenter(top_eval_sprite, .5f, .5f);
-	//C2D_SpriteSetPos(top_eval_sprite, TOP_SCREEN_CENTER_HOR, TOP_SCREEN_CENTER_VER);
-	//C2D_SpriteScale(top_eval_sprite, 0.6f, 0.6f);
 	C2D_SpriteSetDepth(top_eval_sprite, DEPTH_UI_SCORE);
 }
 
@@ -271,7 +262,6 @@ static NoteDrawingResult draw_note(const Note *const note, int noteId) {
 	}
 
 	if (!note->hidden) {
-		// dibujar nota SUSTITUIR POR SPRITE
 		C2D_Sprite *note_sprite = &note_sprites[noteId];
 		C2D_SpriteSetPos(note_sprite, floor(note_x), floor(lane_y));
 		note_sprite->image = C2D_SpriteSheetGetImage(note_sprite_sheet, (frame % 24 < 12) ? offset : offset + 1); //animate
@@ -341,7 +331,6 @@ static void draw_score(void) {
 	snprintf(buf, sizeof(buf), "%06lu", score);
 	C2D_TextFontParse(&scoreLabel, font, dynamic_text_buf, buf);
 	C2D_TextOptimize(&scoreLabel);
-	//dibujar texto ########################### PUNTUACION ######
 	C2D_DrawText(
 		&scoreLabel, C2D_WithColor | C2D_AtBaseline | C2D_AlignRight,
 		390, 15, DEPTH_UI_SCORE, .35f, .35f,
@@ -369,7 +358,6 @@ static void draw_combo(void) {
 		snprintf(buf, sizeof(buf), "%u", combo);
 		C2D_TextFontParse(&comboLabel, font, dynamic_text_buf, buf);
 		C2D_TextOptimize(&comboLabel);
-		//dibujar texto ############################## COMBO ##############
 		C2D_DrawText(
 			&comboLabel, C2D_WithColor | C2D_AtBaseline | C2D_AlignCenter,
 			200.0f, 25.0f, DEPTH_UI_COMBO, .55f, .55f,
@@ -442,7 +430,6 @@ static void draw_attention_cues(void) {
 }
 
 static void draw_bg_sprites(void){
-	//SOMETHING HERE
 	//skybox
 	C2D_Sprite *bg_sprite = &bg_sprites[0];
 	C2D_DrawSprite(bg_sprite);
@@ -512,7 +499,7 @@ static void draw_bg_sprites(void){
 	if (frame % 3 == 0) {
 		w += FG_BUILDINGS_SPEED;
 	}
-	//road TEMPORARY
+	//road
 	C2D_Sprite *road = &bg_sprites[29];
 	C2D_DrawSprite(road);
 
@@ -558,29 +545,24 @@ static void draw_top_hit_popup(void) {
 		{
 		case HIT_VAL_PERFECT:
 			top_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 2);
-			//printf("drawing PERFECT");
 			break;
 
 		case HIT_VAL_GOOD:
 			top_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 3);
 			C2D_SpriteMove(top_sprite, -20, 0); //los sprites están centrados cuando se vería mejor alineados a la izq lmao
-			//printf("drawing GOOD");
 			break;
 
 		case HIT_VAL_OK:
 			top_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 4);
 			C2D_SpriteMove(top_sprite, -30, 0); //los sprites están centrados cuando se vería mejor alineados a la izq lmao
-			//printf("drawing OK");
 			break;
 
 		case HIT_VAL_MISS:
 			top_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 5);
 			C2D_SpriteMove(top_sprite, -20, 0); //los sprites están centrados cuando se vería mejor alineados a la izq lmao
-			//printf("drawing MISS");
 			break;
 
 		default:
-			//printf("I'm not working");
 			break;
 		}
 		C2D_DrawSprite(top_sprite);
@@ -597,29 +579,24 @@ static void draw_bottom_hit_popup(void) {
 		{
 		case HIT_VAL_PERFECT:
 			bot_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 2);
-			//printf("drawing PERFECT");
 			break;
 
 		case HIT_VAL_GOOD:
 			bot_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 3);
-			C2D_SpriteMove(bot_sprite, -20, 0); //los sprites están centrados cuando se vería mejor alineados a la izq lmao
-			//printf("drawing GOOD");
+			C2D_SpriteMove(bot_sprite, -20, 0);
 			break;
 
 		case HIT_VAL_OK:
 			bot_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 4);
-			C2D_SpriteMove(bot_sprite, -30, 0); //los sprites están centrados cuando se vería mejor alineados a la izq lmao
-			//printf("drawing OK");
+			C2D_SpriteMove(bot_sprite, -30, 0);
 			break;
 
 		case HIT_VAL_MISS:
 			bot_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 5);
-			C2D_SpriteMove(bot_sprite, -20, 0); //los sprites están centrados cuando se vería mejor alineados a la izq lmao
-			//printf("drawing MISS");
+			C2D_SpriteMove(bot_sprite, -20, 0);
 			break;
 
 		default:
-			//printf("I'm not working");
 			break;
 		}
 		C2D_DrawSprite(bot_sprite);
