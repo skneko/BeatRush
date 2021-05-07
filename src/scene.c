@@ -361,9 +361,15 @@ static void draw_combo(void) {
 		snprintf(buf, sizeof(buf), "%u", combo);
 		prepare_text_with_font(buf, &combo_label, font, dynamic_text_buf);
 		C2D_DrawText(
-			&combo_label, C2D_WithColor | C2D_AtBaseline | C2D_AlignCenter,
-			200.0f, 25.0f, DEPTH_UI_COMBO, .55f, .55f,
+			&combo_label, C2D_WithColor | C2D_AtBaseline | C2D_AlignLeft,
+			TOP_SCREEN_CENTER_HOR, 25, DEPTH_UI_COMBO, .55f, .55f,
 			color);
+
+		prepare_text_with_font("COMBO", &combo_label, font, dynamic_text_buf);
+		C2D_DrawText(
+			&combo_label, C2D_WithColor | C2D_AtBaseline | C2D_AlignRight,
+			TOP_SCREEN_CENTER_HOR - 10, 24, DEPTH_UI_COMBO, .35f, .35f,
+			C2D_WHITE);
 	}
 }
 
