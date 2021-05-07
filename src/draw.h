@@ -27,4 +27,10 @@ inline C2D_SpriteSheet load_sprite_sheet(const char *path) {
 	return sheet;
 }
 
+inline void prepare_text_with_font(const char *str, C2D_Text *text, C2D_Font font, C2D_TextBuf text_buf) {
+    C2D_TextBufClear(text_buf);
+    C2D_TextFontParse(text, font, text_buf, str);
+    C2D_TextOptimize(text);
+}
+
 #endif
