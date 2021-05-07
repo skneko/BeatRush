@@ -16,13 +16,14 @@
 static C2D_TextBuf dynamic_text_buf;
 
 const char *options[] = {
-	"[Easy] K/DA - POP/STARS",
-	"[Norm] Haloweak - Bass Telekinesis",
-	"[Hard] Memtrix - All You Are",
+	"[Easy  ] K/DA - POP/STARS",
+	"[Normal] Haloweak - Bass Telekinesis",
+	"[Hard  ] Memtrix - All You Are",
+	"[Insane] Panda Eyes & Terminite - Highscore",
 	"Quit"
 };
 
-int option_count = 4;
+int option_count = 5;
 int selected_option;
 
 void menu_init(void) {
@@ -107,6 +108,11 @@ Beatmap *select_beatmap(void) {
 	case 2: {
 		audioSetSong("romfs:/beatmaps/allYouAre/track.opus");
 		return beatmap_load_from_file("romfs:/beatmaps/allYouAre/beatmap.btrm");
+	}
+
+	case 3: {
+		audioSetSong("romfs:/beatmaps/highscore/track.opus");
+		return beatmap_load_from_file("romfs:/beatmaps/highscore/beatmap.btrm");
 	}
 
 	default: {
