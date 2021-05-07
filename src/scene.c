@@ -564,17 +564,14 @@ static void draw_top_hit_popup(void) {
 
 		case HIT_VAL_GOOD:
 			top_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 3);
-			C2D_SpriteMove(top_sprite, -20, 0); //los sprites están centrados cuando se vería mejor alineados a la izq lmao
 			break;
 
 		case HIT_VAL_OK:
 			top_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 4);
-			C2D_SpriteMove(top_sprite, -30, 0); //los sprites están centrados cuando se vería mejor alineados a la izq lmao
 			break;
 
 		case HIT_VAL_MISS:
 			top_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 5);
-			C2D_SpriteMove(top_sprite, -20, 0); //los sprites están centrados cuando se vería mejor alineados a la izq lmao
 			break;
 
 		default:
@@ -598,17 +595,14 @@ static void draw_bottom_hit_popup(void) {
 
 		case HIT_VAL_GOOD:
 			bot_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 3);
-			C2D_SpriteMove(bot_sprite, -20, 0);
 			break;
 
 		case HIT_VAL_OK:
 			bot_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 4);
-			C2D_SpriteMove(bot_sprite, -30, 0);
 			break;
 
 		case HIT_VAL_MISS:
 			bot_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 5);
-			C2D_SpriteMove(bot_sprite, -20, 0);
 			break;
 
 		default:
