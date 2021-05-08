@@ -10,6 +10,8 @@ typedef enum _GameState {
 } GameState;
 
 extern Beatmap *beatmap;
+extern C3D_RenderTarget *top_left;
+extern C3D_RenderTarget *bottom;
 
 void director_init(void);
 void director_end(void);

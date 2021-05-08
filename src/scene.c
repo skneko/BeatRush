@@ -747,7 +747,7 @@ static void draw_debug_auto_hint(void) {
 }
 #endif
 
-void scene_draw(void) {
+void scene_draw_top(void) {
 	draw_bg_sprites();
 	draw_notes();
 	player_draw(&char_sprites[0], char_sprite_sheet);
@@ -773,4 +773,8 @@ void scene_draw(void) {
 #ifdef DEBUG_AUTO
 	draw_debug_auto_hint();
 #endif
+}
+
+void scene_draw_bottom(void) {
+	draw_failure();	// bórrame
 }

@@ -12,8 +12,6 @@
 #include "logic.h"
 #include "director.h"
 
-C3D_RenderTarget *top_left;
-
 C2D_SpriteSheet test_spritesheet;
 C2D_SpriteSheet run_char_anim;
 
@@ -23,8 +21,6 @@ void main_loop(void){
 
 		/* Begin frame */
 		C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
-		C2D_TargetClear(top_left, C2D_BLACK);
-		C2D_SceneBegin(top_left);
 
 		if (!director_main_loop()) {
 			return;
@@ -58,6 +54,8 @@ int main(){
 	top_left = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
 #ifdef DEBUG_CONSOLE
 	consoleInit(GFX_BOTTOM, NULL);
+#else
+	bottom = C2D_CreateScreenTarget(GFX_BOTTOM, GFX_LEFT);
 #endif
 
 	printf("Screen targets initialized.\n");

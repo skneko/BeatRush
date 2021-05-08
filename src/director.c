@@ -8,6 +8,8 @@
 #include "audio.h"
 
 Beatmap *beatmap;
+C3D_RenderTarget *top_left;
+C3D_RenderTarget *bottom;
 
 GameState state;
 bool state_change_requested;
@@ -18,7 +20,8 @@ u64 previous_time;
 
 void (*init)(void);
 void (*update)(unsigned int dt);
-void (*draw)(void);
+void (*draw_top)(void);
+void (*draw_bottom)(void);
 void (*end)(void);
 void (*previous_end)(void);
 
@@ -28,7 +31,8 @@ void do_nothing() {
 void director_init(void) {
 	init = do_nothing;
 	update = do_nothing;
-	draw = do_nothing;
+	draw_top = do_nothing;
+	draw_bottom = do_nothing;
 	end = do_nothing;
 	previous_end = do_nothing;
 
@@ -55,7 +59,8 @@ void director_change_state(GameState next_state) {
 	case SONG_SELECTION_MENU: {
 		init = menu_init;
 		update = menu_update;
-		draw = menu_draw;
+		draw_top = menu_draw;
+		draw_bottom = do_nothing;
 		end = menu_end;
 		break;
 	}
@@ -64,7 +69,8 @@ void director_change_state(GameState next_state) {
 	{
 		init = scene_init;
 		update = logic_update;
-		draw = scene_draw;
+		draw_top = scene_draw_top;
+		draw_bottom = scene_draw_bottom;
 		end = scene_end;
 		break;
 	}
@@ -107,7 +113,13 @@ bool director_main_loop(void){
 		return true;
 	}
 
-	draw();
+	C2D_TargetClear(top_left, C2D_BLACK);
+	C2D_SceneBegin(top_left);
+	draw_top();
+
+	C2D_TargetClear(bottom, C2D_BLACK);
+	C2D_SceneBegin(bottom);
+	draw_bottom();
 
 	return true;
 }
