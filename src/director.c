@@ -117,9 +117,11 @@ bool director_main_loop(void){
 	C2D_SceneBegin(top_left);
 	draw_top();
 
+#ifndef DEBUG_CONSOLE
 	C2D_TargetClear(bottom, C2D_BLACK);
 	C2D_SceneBegin(bottom);
 	draw_bottom();
+#endif
 
 	return true;
 }
