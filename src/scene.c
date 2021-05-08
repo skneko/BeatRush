@@ -93,6 +93,7 @@ static C2D_Sprite note_sprites[MAX_NOTE_SPRITES];
 static C2D_Sprite bg_sprites[MAX_BG_SPRITES];
 static C2D_Sprite hit_eval_sprites[MAX_HIT_EVAL_SPRITES];
 static C2D_Sprite bullseye_sprites[MAX_BULLSEYE_SPRITES];
+static C2D_Sprite bot_bg_sprites[MAX_BG_SPRITES];
 static C2D_Image heart_icons[MAX_HEART_ICONS];
 
 static C2D_SpriteSheet char_sprite_sheet;
@@ -100,9 +101,12 @@ static C2D_SpriteSheet note_sprite_sheet;
 static C2D_SpriteSheet bg_sprite_sheet;
 static C2D_SpriteSheet ui_sprite_sheet;
 
-static C2D_Font font;
+static C2D_Font main_font;
+static C2D_Font secondary_font;
 
 static int frame;
+
+static int shadow_anim_frame;
 
 static int w; //since all fg buildings have different widths I need a variable to see where to put the next sprite
 static int bird_dir;
@@ -219,6 +223,23 @@ static void init_sprites(void) {
 	C2D_SpriteSetCenter(top_bullseye_sprite, .5f, .5f);
 	C2D_SpriteSetPos(top_bullseye_sprite, HITLINE_LEFT_MARGIN, LANE_TOP_MARGIN + LANE_HEIGHT / 2);
 	C2D_SpriteSetDepth(top_bullseye_sprite, DEPTH_UI_SCORE);
+
+	//_______________________________________________________________________________________________________________
+	//BOTTOM SCREEN #################################################################################################
+	//_______________________________________________________________________________________________________________
+	C2D_Sprite *bg_bot_sprite = &bot_bg_sprites[0]; //the sprite for the bg skybox, give or take you know what I mean
+	C2D_SpriteFromSheet(bg_bot_sprite, bg_sprite_sheet, 8);
+	C2D_SpriteSetCenter(bg_bot_sprite, .5f, .5f);
+	C2D_SpriteSetPos(bg_bot_sprite, BOTTOM_SCREEN_CENTER_HOR, BOTTOM_SCREEN_CENTER_VER);
+	C2D_SpriteSetDepth(bg_bot_sprite, DEPTH_BG);
+
+	//time remaining
+	C2D_Sprite *player_shadow_sprite = &bot_bg_sprites[1]; //the sprite for the bg skybox, give or take you know what I mean
+	C2D_SpriteFromSheet(player_shadow_sprite, ui_sprite_sheet, 8);
+	C2D_SpriteSetCenter(player_shadow_sprite, 0, 1);
+	C2D_SpriteSetPos(player_shadow_sprite, BOTTOM_SCREEN_CENTER_HOR, BOTTOM_SCREEN_CENTER_VER);
+	C2D_SpriteSetDepth(player_shadow_sprite, DEPTH_UI_OVER);
+	shadow_anim_frame = 0;
 }
 
 void scene_init(void) {
@@ -232,7 +253,8 @@ void scene_init(void) {
 	in_rest = true;
 
 	dynamic_text_buf = C2D_TextBufNew(DYN_TEXT_BUF_SIZE);
-	font = C2D_FontLoad("romfs:/fonts/The_Impostor.bcfnt");
+	main_font = C2D_FontLoad("romfs:/fonts/The_Impostor.bcfnt");
+	secondary_font = C2D_FontLoad("romfs:/fonts/Minecraft.bcfnt");
 
 	init_sprites();
 	player_init();
@@ -246,7 +268,7 @@ void scene_end(void) {
 	
 	player_end();
 
-	C2D_FontFree(font);
+	C2D_FontFree(main_font);
 	C2D_TextBufDelete(dynamic_text_buf);
 }
 
@@ -344,7 +366,7 @@ static void draw_score(void) {
 
 	C2D_TextBufClear(dynamic_text_buf);
 	snprintf(buf, sizeof(buf), "%06lu", score);
-	C2D_TextFontParse(&scoreLabel, font, dynamic_text_buf, buf);
+	C2D_TextFontParse(&scoreLabel, main_font, dynamic_text_buf, buf);
 	C2D_TextOptimize(&scoreLabel);
 	C2D_DrawText(
 		&scoreLabel, C2D_WithColor | C2D_AtBaseline | C2D_AlignRight,
@@ -371,7 +393,7 @@ static void draw_combo(void) {
 	if (combo > COMBO_DRAW_THRESHOLD) {
 		C2D_TextBufClear(dynamic_text_buf);
 		snprintf(buf, sizeof(buf), "%u", combo);
-		C2D_TextFontParse(&comboLabel, font, dynamic_text_buf, buf);
+		C2D_TextFontParse(&comboLabel, main_font, dynamic_text_buf, buf);
 		C2D_TextOptimize(&comboLabel);
 		C2D_DrawText(
 			&comboLabel, C2D_WithColor | C2D_AtBaseline | C2D_AlignCenter,
@@ -434,7 +456,7 @@ static void draw_attention_cues(void) {
 				snprintf(buf, sizeof(buf), "%0.3f", time_until_next / 1000.0f);
 			}
 
-			C2D_TextFontParse(&restTimeLabel, font, dynamic_text_buf, buf);
+			C2D_TextFontParse(&restTimeLabel, main_font, dynamic_text_buf, buf);
 			C2D_TextOptimize(&restTimeLabel);
 			C2D_DrawText(
 				&restTimeLabel, C2D_WithColor | C2D_AtBaseline | C2D_AlignCenter,
@@ -528,7 +550,7 @@ static void draw_pause(void) {
 
 	C2D_TextBufClear(dynamic_text_buf);
 	snprintf(buf, sizeof(buf), "PAUSE");
-	C2D_TextFontParse(&pauseLabel, font, dynamic_text_buf, buf);
+	C2D_TextFontParse(&pauseLabel, main_font, dynamic_text_buf, buf);
 	C2D_TextOptimize(&pauseLabel);
 	C2D_DrawText(
 		&pauseLabel, C2D_WithColor | C2D_AlignCenter,
@@ -542,7 +564,7 @@ static void draw_failure(void) {
 
 	C2D_TextBufClear(dynamic_text_buf);
 	snprintf(buf, sizeof(buf), "GAME OVER");
-	C2D_TextFontParse(&failureLabel, font, dynamic_text_buf, buf);
+	C2D_TextFontParse(&failureLabel, main_font, dynamic_text_buf, buf);
 	C2D_TextOptimize(&failureLabel);
 	C2D_DrawText(
 		&failureLabel, C2D_WithColor | C2D_AlignCenter,
@@ -775,6 +797,95 @@ void scene_draw_top(void) {
 #endif
 }
 
+static void draw_bot_bg(void){
+	C2D_Sprite *bg_bot_sprite = &bot_bg_sprites[0];
+	C2D_DrawSprite(bg_bot_sprite);
+}
+
+static void draw_hit_counters(void){
+	//perfect
+	C2D_Text perfectLabel;
+	char buf[10];
+	C2D_TextBufClear(dynamic_text_buf);
+	snprintf(buf, sizeof(buf), "0");
+	C2D_TextFontParse(&perfectLabel, main_font, dynamic_text_buf, buf);
+	C2D_TextOptimize(&perfectLabel);
+	C2D_DrawText(
+		&perfectLabel, C2D_WithColor | C2D_AtBaseline | C2D_AlignLeft,
+		77, 11, DEPTH_UI_SCORE, .25f, .25f,
+		C2D_Color32(218, 191, 255, 255));
+
+	//good
+	C2D_Text goodLabel;
+	C2D_TextBufClear(dynamic_text_buf);
+	snprintf(buf, sizeof(buf), "0");
+	C2D_TextFontParse(&goodLabel, main_font, dynamic_text_buf, buf);
+	C2D_TextOptimize(&goodLabel);
+	C2D_DrawText(
+		&goodLabel, C2D_WithColor | C2D_AtBaseline | C2D_AlignLeft,
+		77, 21, DEPTH_UI_SCORE, .25f, .25f,
+		C2D_Color32(218, 191, 255, 255));
+
+	//ok
+	C2D_Text okLabel;
+	C2D_TextBufClear(dynamic_text_buf);
+	snprintf(buf, sizeof(buf), "0");
+	C2D_TextFontParse(&okLabel, main_font, dynamic_text_buf, buf);
+	C2D_TextOptimize(&okLabel);
+	C2D_DrawText(
+		&okLabel, C2D_WithColor | C2D_AtBaseline | C2D_AlignLeft,
+		77, 31, DEPTH_UI_SCORE, .25f, .25f,
+		C2D_Color32(218, 191, 255, 255));
+
+	//miss
+	C2D_Text missLabel;
+	C2D_TextBufClear(dynamic_text_buf);
+	snprintf(buf, sizeof(buf), "0");
+	C2D_TextFontParse(&missLabel, main_font, dynamic_text_buf, buf);
+	C2D_TextOptimize(&missLabel);
+	C2D_DrawText(
+		&missLabel, C2D_WithColor | C2D_AtBaseline | C2D_AlignLeft,
+		77, 41, DEPTH_UI_SCORE, .25f, .25f,
+		C2D_Color32(218, 191, 255, 255));
+}
+
+static void draw_song_name(void){
+	//song name
+	C2D_Text songLabel;
+	char buf[30];
+	C2D_TextBufClear(dynamic_text_buf);
+	snprintf(buf, sizeof(buf), "unknown song");
+	C2D_TextFontParse(&songLabel, secondary_font, dynamic_text_buf, buf);
+	C2D_TextOptimize(&songLabel);
+	C2D_DrawText(
+		&songLabel, C2D_WithColor | C2D_AtBaseline | C2D_AlignLeft,
+		50, 217, DEPTH_UI_SCORE, .3f, .3f,
+		C2D_Color32(218, 191, 255, 255));
+
+	//artists name
+	C2D_Text artistLabel;
+	C2D_TextBufClear(dynamic_text_buf);
+	snprintf(buf, sizeof(buf), "unknown artist");
+	C2D_TextFontParse(&artistLabel, secondary_font, dynamic_text_buf, buf);
+	C2D_TextOptimize(&artistLabel);
+	C2D_DrawText(
+		&artistLabel, C2D_WithColor | C2D_AtBaseline | C2D_AlignLeft,
+		60, 228, DEPTH_UI_SCORE, .3f, .3f,
+		C2D_Color32(218, 191, 255, 255));
+
+}
+
+static void draw_time_remaining(void){
+	float progress = (float)audioPlaybackPosition() / audioLength();	
+	C2D_Sprite *player_shadow_sprite = &bot_bg_sprites[1];
+	C2D_SpriteSetPos(player_shadow_sprite, (BOTTOM_SCREEN_WIDTH - 37) * progress, 210);
+	player_shadow_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, (frame%30 == 0)? 8 + ((++shadow_anim_frame) % 10) : 8 + ((shadow_anim_frame) % 10));
+	C2D_DrawSprite(player_shadow_sprite);
+}
+
 void scene_draw_bottom(void) {
-	draw_failure();	// bórrame
+	draw_bot_bg();
+	draw_hit_counters();
+	draw_song_name();
+	draw_time_remaining();
 }
