@@ -23,7 +23,7 @@ This project uses [GNU Make] in order to build the different targets available f
 **Notes:** 
 * <sup>1</sup> This requires having [makerom] and [bannertool] in your `$PATH`.
 * <sup>2</sup> This requires having [citra] installed and in your `$PATH`.
-* <sup>3</sup> If you are on Windows you will need both [zip] and [libbz2.dll] in your `$PATH`.
+* <sup>3</sup> Requires [zip] in your `$PATH`. If you are on Windows you will need both [zip] and [libbz2.dll] in your `$PATH`.
 
 ### Instructions for 3DSX and ELF
 #### Unix-like / macOS
