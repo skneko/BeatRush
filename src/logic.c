@@ -274,7 +274,7 @@ void logic_update(unsigned int dt) {
 	}
 
 #ifdef DEBUG_AUTO
-	if (saturated_sub_lu(next_note_to_hit->position, audioPlaybackPosition()) <= HIT_WINDOW_PERFECT) {
+	if (saturated_sub_lu(next_note_to_hit->position, audioPlaybackPosition()) == 0) {
 		if (next_note_to_hit->topLane) {
 			action_up();
 		} else {
