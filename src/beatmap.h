@@ -11,10 +11,17 @@ typedef struct _Note {
     bool hidden;
 } Note;
 
+typedef struct _BeatmapMetaInfo {
+    char *song_name;
+    char *artist;
+    char *difficulty_name;
+} BeatmapMetaInfo;
+
 typedef struct _Beatmap {
     int start_offset;               // global compensation
     unsigned short approach_time;   // ms between note appearing and hit
     unsigned int note_count;
+    BeatmapMetaInfo *meta_info;
     Note *notes;
 } Beatmap;
 

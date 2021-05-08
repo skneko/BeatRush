@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define HEADER_ARGUMENTS	5
+
 static unsigned int count_lines(FILE *const file) {
 	unsigned int count = 0U;
 
@@ -34,7 +36,12 @@ static void load_notes(Beatmap *const map, FILE *const map_file, unsigned int no
 
 #ifdef DEBUG_BEATMAP
 void beatmap_print(const Beatmap *const beatmap) {
-	printf("BTRM\n\n%d\t%hu\n\n", beatmap->start_offset, beatmap->approach_time);
+	printf("BTRM\n\n%s\n%s\n%s\n\n%d\t%hu\n\n",
+			beatmap->meta_info->artist,
+			beatmap->meta_info->song_name,
+			beatmap->meta_info->difficulty_name,
+			beatmap->start_offset, 
+			beatmap->approach_time);
 	for (unsigned int i = 0; i < beatmap->note_count; i++) {
 		Note note = beatmap->notes[i];
 		printf("%lu\t%hhu\t%hhu\t%hu\n", note.position, note.type, note.topLane, note.duration);
@@ -49,10 +56,17 @@ Beatmap *beatmap_load_from_file(const char *const path) {
 		return NULL;
 	}
 
+	BeatmapMetaInfo *meta_info = malloc(sizeof(BeatmapMetaInfo));
 	int start_offset;
 	unsigned short approach_time;
-	if (fscanf(map_file, "BTRM\n\n%d\t%hu\n\n", &start_offset, &approach_time) < 2) {
-		printf("File does not look like a valid beatmap: %s", path);
+	int argument_count = fscanf(map_file, "BTRM\n\n%m[^\n]\n%m[^\n]\n%m[^\n]\n\n%d\t%hu\n\n",
+		&meta_info->artist,
+		&meta_info->song_name,
+		&meta_info->difficulty_name,
+		&start_offset, 
+		&approach_time);
+	if (argument_count < HEADER_ARGUMENTS) {
+		printf("File does not look like a valid beatmap: %s (%d / %d)\n", path, argument_count, HEADER_ARGUMENTS);
 		return NULL;
 	}
 
@@ -60,6 +74,7 @@ Beatmap *beatmap_load_from_file(const char *const path) {
 	unsigned int note_count = count_lines(map_file);
 
 	Beatmap *map = malloc(sizeof(Beatmap));
+	map->meta_info = meta_info;
 	map->start_offset = start_offset;
 	map->approach_time = approach_time;
 	map->note_count = note_count;
