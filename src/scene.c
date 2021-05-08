@@ -854,7 +854,7 @@ static void draw_song_name(void){
 	C2D_Text songLabel;
 	char buf[30];
 	C2D_TextBufClear(dynamic_text_buf);
-	snprintf(buf, sizeof(buf), "unknown song");
+	snprintf(buf, sizeof(buf), beatmap->meta_info->song_name);
 	C2D_TextFontParse(&songLabel, secondary_font, dynamic_text_buf, buf);
 	C2D_TextOptimize(&songLabel);
 	C2D_DrawText(
@@ -865,7 +865,7 @@ static void draw_song_name(void){
 	//artists name
 	C2D_Text artistLabel;
 	C2D_TextBufClear(dynamic_text_buf);
-	snprintf(buf, sizeof(buf), "unknown artist");
+	snprintf(buf, sizeof(buf), beatmap->meta_info->artist);
 	C2D_TextFontParse(&artistLabel, secondary_font, dynamic_text_buf, buf);
 	C2D_TextOptimize(&artistLabel);
 	C2D_DrawText(
