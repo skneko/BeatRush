@@ -807,7 +807,7 @@ static void draw_hit_counters(void){
 	C2D_Text perfectLabel;
 	char buf[10];
 	C2D_TextBufClear(dynamic_text_buf);
-	snprintf(buf, sizeof(buf), "0");
+	snprintf(buf, sizeof(buf), "%u",logic_hit_count_perfect());
 	C2D_TextFontParse(&perfectLabel, main_font, dynamic_text_buf, buf);
 	C2D_TextOptimize(&perfectLabel);
 	C2D_DrawText(
@@ -818,7 +818,7 @@ static void draw_hit_counters(void){
 	//good
 	C2D_Text goodLabel;
 	C2D_TextBufClear(dynamic_text_buf);
-	snprintf(buf, sizeof(buf), "0");
+	snprintf(buf, sizeof(buf), "%u",logic_hit_count_good());
 	C2D_TextFontParse(&goodLabel, main_font, dynamic_text_buf, buf);
 	C2D_TextOptimize(&goodLabel);
 	C2D_DrawText(
@@ -829,7 +829,7 @@ static void draw_hit_counters(void){
 	//ok
 	C2D_Text okLabel;
 	C2D_TextBufClear(dynamic_text_buf);
-	snprintf(buf, sizeof(buf), "0");
+	snprintf(buf, sizeof(buf), "%u",logic_hit_count_ok());
 	C2D_TextFontParse(&okLabel, main_font, dynamic_text_buf, buf);
 	C2D_TextOptimize(&okLabel);
 	C2D_DrawText(
@@ -840,7 +840,7 @@ static void draw_hit_counters(void){
 	//miss
 	C2D_Text missLabel;
 	C2D_TextBufClear(dynamic_text_buf);
-	snprintf(buf, sizeof(buf), "0");
+	snprintf(buf, sizeof(buf), "%u",logic_hit_count_miss());
 	C2D_TextFontParse(&missLabel, main_font, dynamic_text_buf, buf);
 	C2D_TextOptimize(&missLabel);
 	C2D_DrawText(

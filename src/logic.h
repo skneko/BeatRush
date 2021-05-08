@@ -33,6 +33,11 @@ extern bool logic_is_invencible(void);
 
 extern bool logic_has_failed(void);
 
+extern unsigned int logic_hit_count_perfect(void);
+extern unsigned int logic_hit_count_good(void);
+extern unsigned int logic_hit_count_ok(void);
+extern unsigned int logic_hit_count_miss(void);
+
 extern HitAssessment logic_top_hit_assessment(void);
 extern HitAssessment logic_bottom_hit_assessment(void);
 

@@ -326,3 +326,19 @@ extern HitAssessment logic_top_hit_assessment(void) {
 extern HitAssessment logic_bottom_hit_assessment(void) {
 	return bottom_hit_assessment;
 }
+
+extern unsigned int logic_hit_count_perfect(void) {
+	return hits_perfect;
+}
+
+extern unsigned int logic_hit_count_good(void) {
+	return hits_good;
+}
+
+extern unsigned int logic_hit_count_ok(void) {
+	return hits_ok;
+}
+
+extern unsigned int logic_hit_count_miss(void) {
+	return hits_miss;
+}
