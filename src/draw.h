@@ -16,4 +16,21 @@ inline bool flicker_is_visible(long long time, int period, int visible) {
     return (time % period) < visible;
 }
 
+inline C2D_SpriteSheet load_sprite_sheet(const char *path) {
+	C2D_SpriteSheet sheet = C2D_SpriteSheetLoad(path);
+
+	if (!sheet) {
+		printf("Failed to load sprite sheet: %s", path);
+		svcBreak(USERBREAK_PANIC);
+	}
+
+	return sheet;
+}
+
+inline void prepare_text_with_font(const char *str, C2D_Text *text, C2D_Font font, C2D_TextBuf text_buf) {
+    C2D_TextBufClear(text_buf);
+    C2D_TextFontParse(text, font, text_buf, str);
+    C2D_TextOptimize(text);
+}
+
 #endif

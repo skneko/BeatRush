@@ -73,10 +73,12 @@
 #define HEART_ICON_STRIDE			 20
 
 // hit evaluation
+#define IDX_HIT_EVAL_TOP			 1
+#define IDX_HIT_EVAL_BOTTOM			 0
 #define HIT_EVAL_TIME_ALIVE			 300
-#define HIT_EVAL_SCROLL_SPEED		 0.05f
-#define HIT_EVAL_BOT_X				 10
-#define HIT_EVAL_BOT_Y 				 120
+#define HIT_EVAL_SCROLL_SPEED		 0.05
+#define HIT_EVAL_BOTTOM_X			 10
+#define HIT_EVAL_BOTTOM_Y 			 120
 #define HIT_EVAL_TOP_X				 10
 #define HIT_EVAL_TOP_Y				 20
 
@@ -112,17 +114,6 @@ static int w; //since all fg buildings have different widths I need a variable t
 static int bird_dir;
 
 static C2D_TextBuf dynamic_text_buf;
-
-static C2D_SpriteSheet load_sprite_sheet(const char *path) {
-	C2D_SpriteSheet sheet = C2D_SpriteSheetLoad(path);
-
-	if (!sheet) {
-		printf("Failed to load sprite sheet: %s\n", path);
-		svcBreak(USERBREAK_PANIC);
-	}
-
-	return sheet;
-}
 
 static void init_sprites(void) {
 //load sheets from gfx
@@ -359,23 +350,21 @@ static void draw_notes(void) {
 }
 
 static void draw_score(void) {
-	C2D_Text scoreLabel;
+	C2D_Text score_label;
 	char buf[SCORE_LABEL_BUF_SIZE];
 
 	unsigned long score = logic_score();
 
-	C2D_TextBufClear(dynamic_text_buf);
 	snprintf(buf, sizeof(buf), "%06lu", score);
-	C2D_TextFontParse(&scoreLabel, main_font, dynamic_text_buf, buf);
-	C2D_TextOptimize(&scoreLabel);
+	prepare_text_with_font(buf, &score_label, main_font, dynamic_text_buf);
 	C2D_DrawText(
-		&scoreLabel, C2D_WithColor | C2D_AtBaseline | C2D_AlignRight,
+		&score_label, C2D_WithColor | C2D_AtBaseline | C2D_AlignRight,
 		390, 15, DEPTH_UI_SCORE, .35f, .35f,
 		C2D_WHITE);
 }
 
 static void draw_combo(void) {
-	C2D_Text comboLabel;
+	C2D_Text combo_label;
 	char buf[COMBO_LABEL_BUF_SIZE];
 
 	unsigned int combo = logic_combo();
@@ -391,14 +380,18 @@ static void draw_combo(void) {
 	}
 
 	if (combo > COMBO_DRAW_THRESHOLD) {
-		C2D_TextBufClear(dynamic_text_buf);
 		snprintf(buf, sizeof(buf), "%u", combo);
-		C2D_TextFontParse(&comboLabel, main_font, dynamic_text_buf, buf);
-		C2D_TextOptimize(&comboLabel);
+		prepare_text_with_font(buf, &combo_label, main_font, dynamic_text_buf);
 		C2D_DrawText(
-			&comboLabel, C2D_WithColor | C2D_AtBaseline | C2D_AlignCenter,
-			200.0f, 25.0f, DEPTH_UI_COMBO, .55f, .55f,
+			&combo_label, C2D_WithColor | C2D_AtBaseline | C2D_AlignLeft,
+			TOP_SCREEN_CENTER_HOR, 25, DEPTH_UI_COMBO, .55f, .55f,
 			color);
+
+		prepare_text_with_font("COMBO", &combo_label, main_font, dynamic_text_buf);
+		C2D_DrawText(
+			&combo_label, C2D_WithColor | C2D_AtBaseline | C2D_AlignRight,
+			TOP_SCREEN_CENTER_HOR - 10, 24, DEPTH_UI_COMBO, .35f, .35f,
+			C2D_WHITE);
 	}
 }
 
@@ -445,9 +438,8 @@ static void draw_attention_cues(void) {
 				return;
 			}
 
-			C2D_Text restTimeLabel;
+			C2D_Text rest_time_label;
 			char buf[REST_TIME_LABEL_BUF_SIZE];
-			C2D_TextBufClear(dynamic_text_buf);
 
 			if (time_until_next < ATTENTION_WARN_THRESHOLD) {
 				draw_attention_warnings(time_until_next);
@@ -456,10 +448,9 @@ static void draw_attention_cues(void) {
 				snprintf(buf, sizeof(buf), "%0.3f", time_until_next / 1000.0f);
 			}
 
-			C2D_TextFontParse(&restTimeLabel, main_font, dynamic_text_buf, buf);
-			C2D_TextOptimize(&restTimeLabel);
+			prepare_text_with_font(buf, &rest_time_label, main_font, dynamic_text_buf);
 			C2D_DrawText(
-				&restTimeLabel, C2D_WithColor | C2D_AtBaseline | C2D_AlignCenter,
+				&rest_time_label, C2D_WithColor | C2D_AtBaseline | C2D_AlignCenter,
 				TOP_SCREEN_CENTER_HOR, TOP_SCREEN_CENTER_VER + 5, DEPTH_UI_OVER, 0.5f, 0.5f,
 				C2D_WHITE);
 		}
@@ -545,98 +536,65 @@ static void draw_bg_sprites(void){
 }
 
 static void draw_pause(void) {
-	C2D_Text pauseLabel;
+	C2D_Text pause_label;
 	char buf[PAUSE_LABEL_BUF_SIZE];
 
-	C2D_TextBufClear(dynamic_text_buf);
 	snprintf(buf, sizeof(buf), "PAUSE");
-	C2D_TextFontParse(&pauseLabel, main_font, dynamic_text_buf, buf);
-	C2D_TextOptimize(&pauseLabel);
+	prepare_text_with_font(buf, &pause_label, main_font, dynamic_text_buf);
 	C2D_DrawText(
-		&pauseLabel, C2D_WithColor | C2D_AlignCenter,
+		&pause_label, C2D_WithColor | C2D_AlignCenter,
 		TOP_SCREEN_CENTER_HOR, TOP_SCREEN_CENTER_VER - NOTE_RADIUS - 5, DEPTH_PAUSE_MENU, 1.5f, 1.5f,
 		C2D_WHITE);
 }
 
 static void draw_failure(void) {
-	C2D_Text failureLabel;
+	C2D_Text failure_label;
 	char buf[10];
 
-	C2D_TextBufClear(dynamic_text_buf);
 	snprintf(buf, sizeof(buf), "GAME OVER");
-	C2D_TextFontParse(&failureLabel, main_font, dynamic_text_buf, buf);
-	C2D_TextOptimize(&failureLabel);
+	prepare_text_with_font(buf, &failure_label, main_font, dynamic_text_buf);
 	C2D_DrawText(
-		&failureLabel, C2D_WithColor | C2D_AlignCenter,
+		&failure_label, C2D_WithColor | C2D_AlignCenter,
 		TOP_SCREEN_CENTER_HOR, TOP_SCREEN_CENTER_VER - NOTE_RADIUS - 5, DEPTH_PAUSE_MENU, 1.5f, 1.5f,
 		C2D_RED);
 }
 
-static void draw_top_hit_popup(void) {
-	HitAssessment top_hit = logic_top_hit_assessment();
-	unsigned long time_alive = audioPlaybackPosition() - top_hit.press_position;
-	if(top_hit.valid && time_alive < HIT_EVAL_TIME_ALIVE){
-		C2D_Sprite *top_sprite = &hit_eval_sprites[1];
-		C2D_SpriteSetPos(top_sprite, HIT_EVAL_TOP_X, HIT_EVAL_TOP_Y - (time_alive * HIT_EVAL_SCROLL_SPEED));
-		switch (top_hit.valuation)
+static void draw_hit_popup(HitAssessment hit, C2D_Sprite *sprite, float x, float y) {
+	unsigned long time_alive = audioPlaybackPosition() - hit.press_position;
+	if(hit.valid && time_alive < HIT_EVAL_TIME_ALIVE){
+		C2D_SpriteSetPos(sprite, x, y - (time_alive * HIT_EVAL_SCROLL_SPEED));
+
+		switch (hit.valuation)
 		{
 		case HIT_VAL_PERFECT:
-			top_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 2);
+			sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 2);
 			break;
 
 		case HIT_VAL_GOOD:
-			top_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 3);
+			sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 3);
 			break;
 
 		case HIT_VAL_OK:
-			top_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 4);
+			sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 4);
 			break;
 
 		case HIT_VAL_MISS:
-			top_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 5);
+			sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 5);
 			break;
 
 		default:
 			break;
 		}
-		C2D_DrawSprite(top_sprite);
-	}
-}
 
-static void draw_bottom_hit_popup(void) {
-	HitAssessment bot_hit = logic_bottom_hit_assessment();
-	unsigned long time_alive = audioPlaybackPosition() - bot_hit.press_position;
-	if(bot_hit.valid && time_alive < HIT_EVAL_TIME_ALIVE){
-		C2D_Sprite *bot_sprite = &hit_eval_sprites[0];
-		C2D_SpriteSetPos(bot_sprite, HIT_EVAL_BOT_X, HIT_EVAL_BOT_Y - (time_alive * HIT_EVAL_SCROLL_SPEED));
-		switch (bot_hit.valuation)
-		{
-		case HIT_VAL_PERFECT:
-			bot_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 2);
-			break;
-
-		case HIT_VAL_GOOD:
-			bot_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 3);
-			break;
-
-		case HIT_VAL_OK:
-			bot_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 4);
-			break;
-
-		case HIT_VAL_MISS:
-			bot_sprite->image = C2D_SpriteSheetGetImage(ui_sprite_sheet, 5);
-			break;
-
-		default:
-			break;
-		}
-		C2D_DrawSprite(bot_sprite);
+		C2D_DrawSprite(sprite);
 	}
 }
 
 static void draw_hit_popups(void) {
-	draw_top_hit_popup();
-	draw_bottom_hit_popup();
+	draw_hit_popup(logic_top_hit_assessment(), &hit_eval_sprites[IDX_HIT_EVAL_TOP], 
+		HIT_EVAL_TOP_X, HIT_EVAL_TOP_Y);
+	draw_hit_popup(logic_bottom_hit_assessment(), &hit_eval_sprites[IDX_HIT_EVAL_BOTTOM], 
+		HIT_EVAL_BOTTOM_X, HIT_EVAL_BOTTOM_Y);
 }
 
 static void draw_bullseyes(void){
@@ -647,28 +605,28 @@ static void draw_bullseyes(void){
 	C2D_DrawSprite(top_bullseye_sprite);
 }
 
-#ifdef DEBUG_OVERLAY
-static void draw_debug_song_time(void) {
-	C2D_Text songTimeLabel;
-	char buf[10];
-
-	C2D_TextBufClear(dynamic_text_buf);
-	snprintf(buf, sizeof(buf), "%05ld", audioPlaybackPosition());
-	C2D_TextParse(&songTimeLabel, dynamic_text_buf, buf);
-	C2D_TextOptimize(&songTimeLabel);
-	C2D_DrawText(
-		&songTimeLabel, C2D_WithColor | C2D_AtBaseline,
-		230.0f, 220.0f, DEPTH_DEBUG_BASE, 0.5f, 0.5f,
-		C2D_WHITE);
+static void draw_progress_bar(void) {
+	float progress = (float)audioPlaybackPosition() / audioLength();
+	
+	u32 color = C2D_Color32(128, 128, 128, 128);
+	C2D_DrawRectangle(
+		0, TOP_SCREEN_HEIGHT - 3,
+		DEPTH_UI_OVER,
+		TOP_SCREEN_WIDTH * progress, 3,
+		color, color, color, color);
 }
 
-static void draw_debug_progress_bar(void) {
-	float progress = (float)audioPlaybackPosition() / audioLength();
-	C2D_DrawRectangle(
-		0, TOP_SCREEN_HEIGHT - 3.0f,
-		DEPTH_DEBUG_BASE,
-		TOP_SCREEN_WIDTH * progress, 3.0f,
-		C2D_RED, C2D_RED, C2D_RED, C2D_RED);
+#ifdef DEBUG_OVERLAY
+static void draw_debug_song_time(void) {
+	C2D_Text song_time_label;
+	char buf[10];
+
+	snprintf(buf, sizeof(buf), "%05ld", audioPlaybackPosition());
+	prepare_text_with_font(buf, &song_time_label, NULL, dynamic_text_buf);
+	C2D_DrawText(
+		&song_time_label, C2D_WithColor | C2D_AtBaseline,
+		230.0f, 220.0f, DEPTH_DEBUG_BASE, 0.5f, 0.5f,
+		C2D_WHITE);
 }
 
 static void draw_debug_rulers(void) {
@@ -722,9 +680,7 @@ static void draw_debug_invincibility_hint(void) {
 		C2D_Text invincibility_hint_label;
 
 		const char *message = "INV";
-		C2D_TextBufClear(dynamic_text_buf);
-		C2D_TextParse(&invincibility_hint_label, dynamic_text_buf, message);
-		C2D_TextOptimize(&invincibility_hint_label);
+		prepare_text_with_font(message, &invincibility_hint_label, NULL, dynamic_text_buf);
 		C2D_DrawText(
 			&invincibility_hint_label, C2D_WithColor | C2D_AtBaseline | C2D_AlignCenter,
 			50, 230, DEPTH_DEBUG_BASE, 0.5f, 0.5f,
@@ -745,7 +701,6 @@ static void draw_debug_keypress_hints(void) {
 
 static void draw_debug_overlay(void) {
 	draw_debug_song_time();
-	draw_debug_progress_bar();
 
 	draw_debug_rulers();
 
@@ -759,9 +714,7 @@ static void draw_debug_auto_hint(void) {
 	C2D_Text auto_hint_label;
 
 	const char *message = "AUTO";
-	C2D_TextBufClear(dynamic_text_buf);
-	C2D_TextParse(&auto_hint_label, dynamic_text_buf, message);
-	C2D_TextOptimize(&auto_hint_label);
+	prepare_text_with_font(message, &auto_hint_label, NULL, dynamic_text_buf);
 	C2D_DrawText(
 		&auto_hint_label, C2D_WithColor | C2D_AtBaseline | C2D_AlignCenter,
 		TOP_SCREEN_CENTER_HOR, 50, DEPTH_DEBUG_BASE, 0.6, 0.6,
@@ -779,6 +732,7 @@ void scene_draw_top(void) {
 	draw_health();
 	draw_hit_popups();
 	draw_bullseyes();
+	draw_progress_bar();
 
 	if (logic_has_failed()) {
 		draw_failure();
@@ -804,47 +758,39 @@ static void draw_bot_bg(void){
 
 static void draw_hit_counters(void){
 	//perfect
-	C2D_Text perfectLabel;
+	C2D_Text perfect_label;
 	char buf[10];
-	C2D_TextBufClear(dynamic_text_buf);
 	snprintf(buf, sizeof(buf), "%u",logic_hit_count_perfect());
-	C2D_TextFontParse(&perfectLabel, main_font, dynamic_text_buf, buf);
-	C2D_TextOptimize(&perfectLabel);
+	prepare_text_with_font(buf, &perfect_label, main_font, dynamic_text_buf);
 	C2D_DrawText(
-		&perfectLabel, C2D_WithColor | C2D_AtBaseline | C2D_AlignLeft,
+		&perfect_label, C2D_WithColor | C2D_AtBaseline | C2D_AlignLeft,
 		77, 11, DEPTH_UI_SCORE, .25f, .25f,
 		C2D_Color32(218, 191, 255, 255));
 
 	//good
-	C2D_Text goodLabel;
-	C2D_TextBufClear(dynamic_text_buf);
+	C2D_Text good_label;
 	snprintf(buf, sizeof(buf), "%u",logic_hit_count_good());
-	C2D_TextFontParse(&goodLabel, main_font, dynamic_text_buf, buf);
-	C2D_TextOptimize(&goodLabel);
+	prepare_text_with_font(buf, &good_label, main_font, dynamic_text_buf);
 	C2D_DrawText(
-		&goodLabel, C2D_WithColor | C2D_AtBaseline | C2D_AlignLeft,
+		&good_label, C2D_WithColor | C2D_AtBaseline | C2D_AlignLeft,
 		77, 21, DEPTH_UI_SCORE, .25f, .25f,
 		C2D_Color32(218, 191, 255, 255));
 
 	//ok
-	C2D_Text okLabel;
-	C2D_TextBufClear(dynamic_text_buf);
+	C2D_Text ok_label;
 	snprintf(buf, sizeof(buf), "%u",logic_hit_count_ok());
-	C2D_TextFontParse(&okLabel, main_font, dynamic_text_buf, buf);
-	C2D_TextOptimize(&okLabel);
+	prepare_text_with_font(buf, &ok_label, main_font, dynamic_text_buf);
 	C2D_DrawText(
-		&okLabel, C2D_WithColor | C2D_AtBaseline | C2D_AlignLeft,
+		&ok_label, C2D_WithColor | C2D_AtBaseline | C2D_AlignLeft,
 		77, 31, DEPTH_UI_SCORE, .25f, .25f,
 		C2D_Color32(218, 191, 255, 255));
 
 	//miss
-	C2D_Text missLabel;
-	C2D_TextBufClear(dynamic_text_buf);
+	C2D_Text miss_label;
 	snprintf(buf, sizeof(buf), "%u",logic_hit_count_miss());
-	C2D_TextFontParse(&missLabel, main_font, dynamic_text_buf, buf);
-	C2D_TextOptimize(&missLabel);
+	prepare_text_with_font(buf, &miss_label, main_font, dynamic_text_buf);
 	C2D_DrawText(
-		&missLabel, C2D_WithColor | C2D_AtBaseline | C2D_AlignLeft,
+		&miss_label, C2D_WithColor | C2D_AtBaseline | C2D_AlignLeft,
 		77, 41, DEPTH_UI_SCORE, .25f, .25f,
 		C2D_Color32(218, 191, 255, 255));
 }
