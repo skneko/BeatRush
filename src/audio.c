@@ -193,7 +193,7 @@ bool fillBuffer(OggOpusFile *opusFile_, ndspWaveBuf *waveBuf_) {
 			if (samples == 0) {
 				break;               // No error here
 			}
-			printf("op_read_stereo: error %d (%s)", samples,
+			printf("op_read_stereo: error %d (%s)\n", samples,
 				   opusStrError(samples));
 			break;
 		}

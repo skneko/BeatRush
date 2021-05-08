@@ -117,7 +117,7 @@ static C2D_SpriteSheet load_sprite_sheet(const char *path) {
 	C2D_SpriteSheet sheet = C2D_SpriteSheetLoad(path);
 
 	if (!sheet) {
-		printf("Failed to load sprite sheet: %s", path);
+		printf("Failed to load sprite sheet: %s\n", path);
 		svcBreak(USERBREAK_PANIC);
 	}
 
