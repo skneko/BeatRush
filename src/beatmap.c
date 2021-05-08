@@ -16,7 +16,7 @@ static unsigned int count_lines(FILE *const file) {
 	return count;
 }
 
-void load_notes(Beatmap *const map, FILE *const map_file, unsigned int note_count) {
+static void load_notes(Beatmap *const map, FILE *const map_file, unsigned int note_count) {
 	unsigned long position;
 	unsigned char type;
 	unsigned char topLane;
