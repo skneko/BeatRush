@@ -32,6 +32,7 @@ extern unsigned short logic_max_health(void);
 extern bool logic_is_invencible(void);
 
 extern bool logic_has_failed(void);
+bool logic_is_finished(void);
 
 extern unsigned int logic_hit_count_perfect(void);
 extern unsigned int logic_hit_count_good(void);

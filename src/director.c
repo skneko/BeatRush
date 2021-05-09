@@ -41,7 +41,7 @@ void director_init(void) {
 }
 
 void director_end(void) {
-  if (beatmap != NULL) { // FIXME
+  if (beatmap != NULL) {
     free(beatmap);
   }
 }

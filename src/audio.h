@@ -15,5 +15,6 @@ extern bool audioSetSong(const char *path);
 extern void audioPause(void);
 extern void audioPlay(void);
 extern bool audioIsPaused(void);
+extern void audioStop(void);
 
 #endif

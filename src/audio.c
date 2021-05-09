@@ -331,15 +331,19 @@ bool audioSetSong(const char *path) {
   priority = priority < 0x18 ? 0x18 : priority;
   priority = priority > 0x3F ? 0x3F : priority;
 
-  // Start the thread, passing our audioFile as an argument.
-  audioThread = threadCreate(audioThreadRoutine, audioFile, THREAD_STACK_SZ,
-                             priority, THREAD_AFFINITY, false);
-  printf("Created audio thread: %p.\n", audioThread);
-
+  s_quit = false;
+  songTime = 0;
+  playheadPosition = 0;
   previousFrameTime = osGetTime();
   lastReportedPlayheadPosition = 0;
   s_song_ongoing = true;
   s_paused = true;
+
+  // Start the thread, passing our audioFile as an argument.
+  audioThread = threadCreate(audioThreadRoutine, audioFile, THREAD_STACK_SZ,
+                             priority, THREAD_AFFINITY, false);
+  printf("Created audio thread: %p.\n", audioThread);
+  
 
 #ifdef DEBUG_AUDIO
   osTickCounterStart(&playbackTimer);
@@ -349,6 +353,16 @@ bool audioSetSong(const char *path) {
 }
 
 void audioExit(void) {
+  audioStop();
+
+  // Cleanup audio things and de-init platform features
+  audioExitHardware();
+  ndspExit();
+}
+
+void audioStop(void) {
+  s_song_ongoing = false;
+
   // Signal audio thread to quit
   s_quit = true;
   LightEvent_Signal(&s_event);
@@ -357,9 +371,6 @@ void audioExit(void) {
   threadJoin(audioThread, UINT64_MAX);
   threadFree(audioThread);
 
-  // Cleanup audio things and de-init platform features
-  audioExitHardware();
-  ndspExit();
   op_free(audioFile);
 }
 

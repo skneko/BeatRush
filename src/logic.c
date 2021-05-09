@@ -254,12 +254,20 @@ void logic_init() {
   bottom_hit_assessment.valid = false;
 }
 
-void logic_end(void) {}
+void logic_end(void) {
+  free(beatmap);
+  audioStop();
+}
 
 void logic_update(unsigned int dt) {
   player_update(dt);
 
   u32 k_down = hidKeysDown();
+
+  /* Escape to menu */
+  if (k_down & KEY_SELECT) {
+    director_change_state(SONG_SELECTION_MENU);
+  }
 
   /* Pause on START */
   if ((k_down & KEY_START) && !logic_has_failed()) {
@@ -318,18 +326,20 @@ bool logic_is_invencible(void) { return remaining_invencibility > 0; }
 
 bool logic_has_failed(void) { return has_failed; }
 
-extern HitAssessment logic_top_hit_assessment(void) {
+HitAssessment logic_top_hit_assessment(void) {
   return top_hit_assessment;
 }
 
-extern HitAssessment logic_bottom_hit_assessment(void) {
+HitAssessment logic_bottom_hit_assessment(void) {
   return bottom_hit_assessment;
 }
 
-extern unsigned int logic_hit_count_perfect(void) { return hits_perfect; }
+unsigned int logic_hit_count_perfect(void) { return hits_perfect; }
 
-extern unsigned int logic_hit_count_good(void) { return hits_good; }
+unsigned int logic_hit_count_good(void) { return hits_good; }
 
-extern unsigned int logic_hit_count_ok(void) { return hits_ok; }
+unsigned int logic_hit_count_ok(void) { return hits_ok; }
 
-extern unsigned int logic_hit_count_miss(void) { return hits_miss; }
+unsigned int logic_hit_count_miss(void) { return hits_miss; }
+
+bool logic_is_finished(void) { return remaining_notes_to_hit == 0; }
