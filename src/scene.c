@@ -645,6 +645,19 @@ static void draw_progress_bar(void) {
                     TOP_SCREEN_WIDTH * progress, 3, color, color, color, color);
 }
 
+static void draw_finished(void) {
+  C2D_Text finished_text;
+  C2D_Text finished_text_sub;
+  prepare_text_with_font("CLEARED!", &finished_text, main_font, dynamic_text_buf);
+  C2D_DrawText(&finished_text, C2D_WithColor | C2D_AtBaseline | C2D_AlignCenter, 
+    TOP_SCREEN_CENTER_HOR, TOP_SCREEN_CENTER_VER, 
+    DEPTH_UI_OVER, 0.8f, 0.8f, C2D_WHITE);
+  prepare_text_with_font("Press SELECT to go back to the menu", &finished_text_sub, secondary_font, dynamic_text_buf);
+  C2D_DrawText(&finished_text_sub, C2D_WithColor | C2D_AtBaseline | C2D_AlignCenter, 
+    TOP_SCREEN_CENTER_HOR, TOP_SCREEN_CENTER_VER + 60, 
+    DEPTH_UI_OVER, 0.4f, 0.4f, C2D_WHITE);
+}
+
 #ifdef DEBUG_OVERLAY
 static void draw_debug_song_time(void) {
   C2D_Text song_time_label;
@@ -757,7 +770,9 @@ void scene_draw_top(void) {
   draw_bullseyes();
   draw_progress_bar();
 
-  if (logic_has_failed()) {
+  if (logic_is_finished()) {
+    draw_finished();
+  } else if (logic_has_failed()) {
     draw_failure();
   } else if (audioIsPaused()) {
     draw_pause();
