@@ -303,10 +303,10 @@ void logic_update(unsigned int dt) {
     }
   }
 #else
-  if (k_down & KEY_A || k_down & KEY_B) {
+  if (k_down & KEY_A || k_down & KEY_B || k_down & KEY_DOWN || k_down & KEY_R) {
     action_down();
   }
-  if (k_down & KEY_X || k_down & KEY_Y) {
+  if (k_down & KEY_X || k_down & KEY_Y || k_down & KEY_UP || k_down & KEY_L) {
     action_up();
   }
 #endif
