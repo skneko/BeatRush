@@ -92,9 +92,8 @@ To remove compiler generated files, run `make clean`.
 In order to launch the game in your PC you will need an emulator such as [citra]. Citra supports all formats generated. A shorthand for building and launching citra is available through the `make citra` command.
 
 If you want to load this file in an actual 3DS, you will need homebrew capabilities. You have several options:
-- *(recommended)* Build a CIA file and then install it using a title manager such as [FBI].
-- Build a 3DSX file and then use a launcher such as Homebrew Launcher. Follow the [normal procedure for loading 3DSX files](https://www.cfwaifu.com/3ds-install-games-homebrew/)
-or [convert it to a CIA file](https://www.cfwaifu.com/3ds-to-cia/).
+- *(recommended)* Build a 3DSX file and then use a launcher such as Homebrew Launcher. Follow the [normal procedure for loading 3DSX files](https://www.cfwaifu.com/3ds-install-games-homebrew/).
+- Build a CIA file and then install it using a title manager such as [FBI].
 
 [devkitPro]: <https://devkitpro.org/>
 [citro2d]: <https://citro2d.devkitpro.org/>
