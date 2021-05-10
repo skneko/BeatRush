@@ -331,9 +331,7 @@ bool logic_is_invencible(void) { return remaining_invencibility > 0; }
 
 bool logic_has_failed(void) { return has_failed; }
 
-HitAssessment logic_top_hit_assessment(void) {
-  return top_hit_assessment;
-}
+HitAssessment logic_top_hit_assessment(void) { return top_hit_assessment; }
 
 HitAssessment logic_bottom_hit_assessment(void) {
   return bottom_hit_assessment;

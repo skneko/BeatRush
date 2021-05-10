@@ -343,7 +343,6 @@ bool audioSetSong(const char *path) {
   audioThread = threadCreate(audioThreadRoutine, audioFile, THREAD_STACK_SZ,
                              priority, THREAD_AFFINITY, false);
   printf("Created audio thread: %p.\n", audioThread);
-  
 
 #ifdef DEBUG_AUDIO
   osTickCounterStart(&playbackTimer);
