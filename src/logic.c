@@ -250,6 +250,11 @@ void logic_init() {
   time_to_health_regen = 0;
   has_failed = false;
 
+  hits_perfect = 0;
+  hits_good = 0;
+  hits_ok = 0;
+  hits_miss = 0;
+
   top_hit_assessment.valid = false;
   bottom_hit_assessment.valid = false;
 }
