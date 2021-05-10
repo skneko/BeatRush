@@ -241,6 +241,7 @@ void logic_init() {
   remaining_notes_to_hit = beatmap->note_count;
   global_offset = beatmap->start_offset;
 
+  score = 0;
   reset_combo();
 
   health = HEALTH_INITIAL;
