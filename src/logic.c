@@ -242,6 +242,7 @@ void logic_init() {
   global_offset = beatmap->start_offset;
 
   score = 0;
+  notes_passed = 0;
   reset_combo();
 
   health = HEALTH_INITIAL;
