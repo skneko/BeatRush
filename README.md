@@ -6,6 +6,38 @@ Playing this game in a real 3DS requires a homebrew loader.
 This is a university project. Features and termination are not guaranteed and are subject to change at any time. 
 It is very likely this project will be archived after said university course is done.
 
+## How to play
+Hit the enemies as they approach the indicators. You have one action for each lane (top/bottom).
+
+- When a note collides with the line on the left of the screen, press the corresponding button for its lane.
+- Accuracy is related to the moment the note crosses the center of the line compared to the moment you press the button.
+- The combo indicator increments with successive successful presses and restarts when one press is too inaccurate.
+- Score depends on your accuracy and increments with a higher combo.
+- The pace, length and difficulty of a level depend on the selected song.
+
+### Controls
+During the game:
+- A/B/down/R = bottom lane
+- X/Y/up/L = top lane
+- SELECT = back to menu
+- START = pause
+    
+In menu:
+- D-pad = move
+- haptic circle (C-Pad) = move
+- A = confirm
+
+## Troubleshooting
+
+### If you don't have sound
+1. Open Citra.
+2. Click: File > Open Citra folder...
+3. Go to folder `sdmc`, and then `3ds`. If they don't exist, create them.
+4. Create an empty file called `dspfirm.cdc`.    
+	Be careful if you have extensions hidden, to not call the file something like `dspfirm.cdc.txt`. This wouldn't work.
+    
+If the empty file `sdmc/3ds/dspfirm.cdc` is found by Citra, audio will work.
+
 ## Building from source
 ### Targets overview
 This project uses [GNU Make] in order to build the different targets available for the 3DS homebrew scene. Use the command `make [target]` with one of the targets specified in the following table after making sure you comply with the requirements. Some targets have particular additional requirements.
@@ -60,9 +92,8 @@ To remove compiler generated files, run `make clean`.
 In order to launch the game in your PC you will need an emulator such as [citra]. Citra supports all formats generated. A shorthand for building and launching citra is available through the `make citra` command.
 
 If you want to load this file in an actual 3DS, you will need homebrew capabilities. You have several options:
-- *(recommended)* Build a CIA file and then install it using a title manager such as [FBI].
-- Build a 3DSX file and then use a launcher such as Homebrew Launcher. Follow the [normal procedure for loading 3DSX files](https://www.cfwaifu.com/3ds-install-games-homebrew/)
-or [convert it to a CIA file](https://www.cfwaifu.com/3ds-to-cia/).
+- *(recommended)* Build a 3DSX file and then use a launcher such as Homebrew Launcher. Follow the [normal procedure for loading 3DSX files](https://www.cfwaifu.com/3ds-install-games-homebrew/).
+- Build a CIA file and then install it using a title manager such as [FBI].
 
 [devkitPro]: <https://devkitpro.org/>
 [citro2d]: <https://citro2d.devkitpro.org/>
